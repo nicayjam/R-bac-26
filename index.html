@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-<title>Quiz Bac Djibouti 2026</title>
+<title>Révi-Bac Djibouti 2026</title>
 
 <!-- ═══ PWA — Manifest & Meta ═══ -->
 <link rel="manifest" href="manifest.json"/>
@@ -11,11 +11,11 @@
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="apple-mobile-web-app-title" content="Bac DJ 2026"/>
-<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png"/>
-<link rel="apple-touch-icon" sizes="167x167" href="icon-167.png"/>
-<link rel="apple-touch-icon" sizes="152x152" href="icon-152.png"/>
-<meta name="description" content="Révision intelligente pour le Baccalauréat de Djibouti 2026 — Toutes séries"/>
+<meta name="apple-mobile-web-app-title" content="Révi-Bac 2026"/>
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180x180.png"/>
+<link rel="apple-touch-icon" sizes="167x167" href="icon-167x167.png"/>
+<link rel="apple-touch-icon" sizes="152x152" href="icon-152x152.png"/>
+<meta name="description" content="Révision intelligente pour le Baccalauréat de Djibouti 2026 — Toutes séries · LPK12"/>
 <!-- ═══════════════════════════════ -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -1066,27 +1066,46 @@ updateClock();
 setInterval(updateClock, 10000);
 
 // ══════════════════════════════════════
-// SPLASH → QUIZ TRANSITION
+// SPLASH → QUIZ TRANSITION (version robuste PWA)
 // ══════════════════════════════════════
 setTimeout(function() {
-  document.getElementById('titleBlock').classList.add('visible');
+  var tb = document.getElementById('titleBlock');
+  if(tb) tb.classList.add('visible');
 }, 600);
 
-setTimeout(function() {
+function _lancerQuiz() {
   var splash = document.getElementById('splash');
-  splash.classList.add('exit');
+  if(splash) splash.classList.add('exit');
   setTimeout(function() {
-    splash.style.display = 'none';
+    if(splash) splash.style.display = 'none';
     var quizApp = document.getElementById('quiz-app');
-    quizApp.classList.add('active');
-    // Trigger quiz init
+    if(quizApp) quizApp.classList.add('active');
     if(typeof afficherSerie === 'function') {
       afficherSerie('SG');
       if(typeof updateRobotMood === 'function') updateRobotMood('happy');
-      if(typeof showDiboSpeech === 'function') setTimeout(function(){ showDiboSpeech('Salam ! Je suis NUUR ✨ Bonne révision !'); }, 1000);
+      if(typeof showDiboSpeech === 'function') {
+        setTimeout(function(){ showDiboSpeech('Salam ! Je suis NUUR ✨ Bonne révision !'); }, 1000);
+      }
+    } else {
+      // Fallback : réessayer après 500ms si afficherSerie pas encore dispo
+      setTimeout(function() {
+        if(typeof afficherSerie === 'function') {
+          afficherSerie('SG');
+          if(typeof updateRobotMood === 'function') updateRobotMood('happy');
+        }
+      }, 500);
     }
   }, 700);
-}, 3200);
+}
+
+// Lancer après 3.2s — mais attendre que le DOM soit entièrement chargé
+if(document.readyState === 'complete' || document.readyState === 'interactive') {
+  setTimeout(_lancerQuiz, 3200);
+} else {
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(_lancerQuiz, 3200);
+  });
+}
 
 // ══════════════════════════════════════
 // QUIZ BAC V14 — Script complet
@@ -3714,152 +3733,57 @@ function toggleMethode(id) {
 // ══════════════════════════════════════
 // PWA — SERVICE WORKER + INSTALL BANNER
 // ══════════════════════════════════════
-
-/* ─── Enregistrement du Service Worker ─── */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
     navigator.serviceWorker.register('./sw.js')
       .then(function(reg) {
-        console.log('[PWA] Service Worker enregistré :', reg.scope);
-
-        // Détecter une mise à jour disponible
+        console.log('[PWA] SW enregistré:', reg.scope);
         reg.addEventListener('updatefound', function() {
-          var newWorker = reg.installing;
-          newWorker.addEventListener('statechange', function() {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          var nw = reg.installing;
+          nw.addEventListener('statechange', function() {
+            if (nw.state === 'installed' && navigator.serviceWorker.controller) {
               showUpdateBanner();
             }
           });
         });
-      })
-      .catch(function(err) {
-        console.warn('[PWA] Échec enregistrement Service Worker :', err);
-      });
-
-    // Rechargement automatique après mise à jour SW
+      }).catch(function(e){ console.warn('[PWA] SW échec:', e); });
     var refreshing = false;
     navigator.serviceWorker.addEventListener('controllerchange', function() {
-      if (!refreshing) {
-        refreshing = true;
-        window.location.reload();
-      }
+      if (!refreshing) { refreshing = true; window.location.reload(); }
     });
   });
 }
 
-/* ─── Bannière d'installation "Ajouter à l'écran d'accueil" ─── */
 var deferredPrompt = null;
-
 window.addEventListener('beforeinstallprompt', function(e) {
-  e.preventDefault();
-  deferredPrompt = e;
-  // Afficher la bannière après 3 secondes (laisse le splash se charger)
-  setTimeout(showInstallBanner, 3000);
+  e.preventDefault(); deferredPrompt = e;
+  setTimeout(showInstallBanner, 4000);
 });
 
 function showInstallBanner() {
-  if (!deferredPrompt) return;
-  if (document.getElementById('pwa-install-banner')) return;
-
+  if (!deferredPrompt || document.getElementById('pwa-install-banner')) return;
   var banner = document.createElement('div');
   banner.id = 'pwa-install-banner';
-  banner.style.cssText = [
-    'position:fixed', 'bottom:80px', 'left:50%',
-    'transform:translateX(-50%)',
-    'background:linear-gradient(135deg,#005535,#007a48)',
-    'color:#fff', 'border-radius:16px',
-    'padding:14px 20px', 'display:flex',
-    'align-items:center', 'gap:12px',
-    'box-shadow:0 8px 32px rgba(0,0,0,0.5)',
-    'z-index:99999', 'max-width:340px', 'width:90%',
-    'border:1px solid rgba(0,255,140,0.3)',
-    'animation:pwaSlideUp 0.4s cubic-bezier(0.22,1,0.36,1) both',
-    'font-family:Outfit,Montserrat,sans-serif'
-  ].join(';');
-
-  banner.innerHTML = [
-    '<span style="font-size:28px;flex-shrink:0">📲</span>',
-    '<div style="flex:1">',
-      '<div style="font-weight:700;font-size:14px;letter-spacing:0.02em">Installer l\'app</div>',
-      '<div style="font-size:12px;opacity:0.85;margin-top:2px">Accès hors-ligne · Sans internet</div>',
-    '</div>',
-    '<button onclick="triggerInstall()" style="',
-      'background:rgba(0,255,140,0.2);border:1px solid rgba(0,255,140,0.5);',
-      'color:#00ff8c;border-radius:10px;padding:8px 14px;',
-      'font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;',
-      'font-family:inherit',
-    '">Installer</button>',
-    '<button onclick="dismissInstallBanner()" style="',
-      'background:none;border:none;color:rgba(255,255,255,0.5);',
-      'font-size:20px;cursor:pointer;padding:0 4px;line-height:1',
-    '">✕</button>'
-  ].join('');
-
-  // Injection de l'animation keyframe si pas déjà présente
-  if (!document.getElementById('pwa-style')) {
-    var style = document.createElement('style');
-    style.id = 'pwa-style';
-    style.textContent = '@keyframes pwaSlideUp{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}';
-    document.head.appendChild(style);
-  }
-
+  banner.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#1a0a00,#3a1f00);color:#fff;border-radius:16px;padding:14px 20px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,0.6);z-index:99999;max-width:340px;width:90%;border:1px solid rgba(201,149,10,0.5);font-family:Outfit,Montserrat,sans-serif';
+  banner.innerHTML = '<span style="font-size:26px;flex-shrink:0">📲</span><div style="flex:1"><div style="font-weight:700;font-size:14px">Installer Révi-Bac</div><div style="font-size:12px;opacity:0.8;margin-top:2px">Accès hors-ligne · Sans internet</div></div><button onclick="triggerInstall()" style="background:rgba(201,149,10,0.25);border:1px solid rgba(201,149,10,0.6);color:#f5c842;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Installer</button><button onclick="dismissInstallBanner()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:20px;cursor:pointer;padding:0 4px">✕</button>';
   document.body.appendChild(banner);
 }
-
 function triggerInstall() {
   if (!deferredPrompt) return;
   deferredPrompt.prompt();
-  deferredPrompt.userChoice.then(function(result) {
-    console.log('[PWA] Installation :', result.outcome);
-    dismissInstallBanner();
-    deferredPrompt = null;
-  });
+  deferredPrompt.userChoice.then(function(r){ console.log('[PWA]', r.outcome); dismissInstallBanner(); deferredPrompt = null; });
 }
+function dismissInstallBanner() { var b = document.getElementById('pwa-install-banner'); if(b) b.remove(); }
+window.addEventListener('appinstalled', function(){ dismissInstallBanner(); });
 
-function dismissInstallBanner() {
-  var b = document.getElementById('pwa-install-banner');
-  if (b) b.remove();
-}
-
-// Succès d'installation
-window.addEventListener('appinstalled', function() {
-  console.log('[PWA] Application installée avec succès !');
-  dismissInstallBanner();
-});
-
-/* ─── Bannière de mise à jour disponible ─── */
 function showUpdateBanner() {
   var banner = document.createElement('div');
-  banner.style.cssText = [
-    'position:fixed', 'top:16px', 'left:50%',
-    'transform:translateX(-50%)',
-    'background:linear-gradient(135deg,#1a1a2e,#16213e)',
-    'color:#fff', 'border-radius:14px',
-    'padding:12px 18px', 'display:flex',
-    'align-items:center', 'gap:10px',
-    'box-shadow:0 8px 32px rgba(0,0,0,0.6)',
-    'z-index:99999', 'max-width:320px', 'width:90%',
-    'border:1px solid rgba(0,200,255,0.3)',
-    'font-family:Outfit,Montserrat,sans-serif'
-  ].join(';');
-
-  banner.innerHTML = [
-    '<span style="font-size:22px">🔄</span>',
-    '<div style="flex:1;font-size:13px">Mise à jour disponible</div>',
-    '<button onclick="applyUpdate(this)" style="',
-      'background:rgba(0,200,255,0.2);border:1px solid rgba(0,200,255,0.4);',
-      'color:#00c8ff;border-radius:8px;padding:6px 12px;',
-      'font-size:12px;font-weight:700;cursor:pointer;font-family:inherit',
-    '">Mettre à jour</button>'
-  ].join('');
-
+  banner.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#1a1a2e;color:#fff;border-radius:14px;padding:12px 18px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,0.6);z-index:99999;max-width:320px;width:90%;border:1px solid rgba(0,200,255,0.3);font-family:Outfit,Montserrat,sans-serif';
+  banner.innerHTML = '<span style="font-size:22px">🔄</span><div style="flex:1;font-size:13px">Mise à jour disponible</div><button onclick="applyUpdate(this)" style="background:rgba(0,200,255,0.2);border:1px solid rgba(0,200,255,0.4);color:#00c8ff;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">Mettre à jour</button>';
   document.body.appendChild(banner);
 }
-
 function applyUpdate(btn) {
-  if (navigator.serviceWorker.controller) {
-    navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
-  }
+  if (navigator.serviceWorker.controller) navigator.serviceWorker.controller.postMessage({type:'SKIP_WAITING'});
   btn.closest('div').remove();
 }
 

@@ -902,12 +902,12 @@ body {
 </div><!-- fin .phone -->
 
 <!-- ══ SCREEN 4 : FICHES FLASH ══ -->
-<div id="screen-fiches-outer" style="display:none;position:fixed;inset:0;z-index:300;overflow-y:auto;background:white;">
-  <div style="width:100%;background:white;min-height:100vh;overflow:hidden;">
+<div id="screen-fiches-outer" style="display:none;position:fixed;inset:0;z-index:300;overflow-y:auto;-webkit-overflow-scrolling:touch;background:white;">
+  <div style="width:100%;background:white;min-height:100vh;overflow:visible;">
 
     <div class="fiches-header">
       <div class="fh-blob"></div>
-      <button onclick="closeFiches()" style="background:rgba(255,255,255,0.2);border:none;border-radius:10px;width:32px;height:32px;color:white;font-size:16px;cursor:pointer;position:relative;z-index:3;">←</button>
+      <button onclick="closeFiches()" style="background:rgba(255,255,255,0.35);border:2px solid rgba(255,255,255,0.6);border-radius:12px;width:44px;height:44px;color:white;font-size:20px;font-weight:700;cursor:pointer;position:relative;z-index:3;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.2);">←</button>
       <div class="fh-title" style="margin-top:8px;">📋 Fiches Flash</div>
       <div class="fh-sub">Toutes séries · Concepts clés du Bac Djibouti 2026</div>
       <div class="fiche-tabs" id="ficheSeriesTabs">
@@ -924,12 +924,12 @@ body {
 </div>
 
 <!-- ══ SCREEN 5 : MÉTHODE BAC ══ -->
-<div id="screen-methode-outer" style="display:none;position:fixed;inset:0;z-index:300;overflow-y:auto;background:white;">
-  <div style="width:100%;background:white;min-height:100vh;overflow:hidden;">
+<div id="screen-methode-outer" style="display:none;position:fixed;inset:0;z-index:300;overflow-y:auto;-webkit-overflow-scrolling:touch;background:white;">
+  <div style="width:100%;background:white;min-height:100vh;overflow:visible;">
 
     <div class="methode-header">
       <div class="fh-blob" style="background:rgba(255,255,255,0.12);"></div>
-      <button onclick="closeMethode()" style="background:rgba(255,255,255,0.2);border:none;border-radius:10px;width:32px;height:32px;color:white;font-size:16px;cursor:pointer;position:relative;z-index:3;">←</button>
+      <button onclick="closeMethode()" style="background:rgba(255,255,255,0.35);border:2px solid rgba(255,255,255,0.6);border-radius:12px;width:44px;height:44px;color:white;font-size:20px;font-weight:700;cursor:pointer;position:relative;z-index:3;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.2);">←</button>
       <div class="fh-title" style="margin-top:8px;">🎯 Méthode Bac</div>
       <div class="fh-sub">Grilles de méthodologie · Toutes séries</div>
       <div class="fiche-tabs" id="methodeSeriesTabs">

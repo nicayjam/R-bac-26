@@ -2521,23 +2521,25 @@ function afficherQuestion() {
   // Réponses — mélange des choix (anti-biais position)
   var letters = ['A','B','C','D'];
   var html = '';
-  // Créer un tableau d'indices mélangés
-  var indices = [0,1,2,3].slice(0, q.choix.length);
-  for(var si = indices.length - 1; si > 0; si--) {
+  // Extraire le texte de la bonne réponse AVANT de mélanger
+  var correctText = q.choix[q.rep];
+  // Créer une copie mélangée des choix
+  var shuffledChoix = q.choix.slice();
+  for(var si = shuffledChoix.length - 1; si > 0; si--) {
     var sj = Math.floor(Math.random() * (si+1));
-    var stmp = indices[si]; indices[si] = indices[sj]; indices[sj] = stmp;
+    var stmp = shuffledChoix[si]; shuffledChoix[si] = shuffledChoix[sj]; shuffledChoix[sj] = stmp;
   }
-  // La bonne réponse originale correspond à q.rep dans q.choix
-  var newCorrectPos = indices.indexOf(q.rep);
-  indices.forEach(function(origIdx, displayPos) {
+  // Trouver la nouvelle position de la bonne réponse dans le tableau mélangé
+  var newCorrectPos = shuffledChoix.indexOf(correctText);
+  shuffledChoix.forEach(function(texte, displayPos) {
     html += '<div class="choice" onclick="pickAnswer(this,' + displayPos + ',' + newCorrectPos + ',' + q.pts + ')">'
       + '<div class="choice-letter">' + letters[displayPos] + '</div>'
-      + '<div class="choice-text">' + q.choix[origIdx] + '</div>'
+      + '<div class="choice-text">' + texte + '</div>'
       + '</div>';
   });
-  // Stocker la bonne position pour cette question
+  // Stocker pour le timer et NUUR
   q._shuffledCorrect = newCorrectPos;
-  q._shuffledChoix = indices.map(function(i){ return q.choix[i]; });
+  q._shuffledChoix = shuffledChoix;
   document.getElementById('choices-container').innerHTML = html;
 
   // Barre de progression

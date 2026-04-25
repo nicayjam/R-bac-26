@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Révi-Bac Djibouti 2026</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4361EE">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Révi-Bac 2026">
+<link rel="apple-touch-icon" href="icon-192x192.png">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=DM+Sans:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -3302,6 +3309,14 @@ function toggleMethode(id) {
 afficherSerie('SG');
 updateRobotMood('happy');
 setTimeout(function(){ showDiboSpeech('Salam ! Je suis NUUR ✨ Bonne révision !'); }, 2500);
+
+// PWA Service Worker
+if('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  });
+}
+
 </script>
 </body>
 </html>

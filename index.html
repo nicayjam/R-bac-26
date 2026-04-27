@@ -38,19 +38,17 @@
 
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
-html, body {
-  overflow-x: hidden;
-  max-width: 100vw;
-  background: #002a14;
+html {
+  height: 100%;
 }
 
 body {
   font-family: 'DM Sans', sans-serif;
   background: var(--bg);
-  min-height: 100vh;
-  display: block;
-  padding: 0;
+  height: 100%;
   margin: 0;
+  padding: 0;
+  /* PAS de overflow ici — les éléments fixed gèrent leur propre scroll */
 }
 
 .phone {
@@ -58,7 +56,6 @@ body {
   max-width: 100%;
   background: var(--bg);
   border-radius: 0;
-  overflow-x: hidden;
   box-shadow: none;
   min-height: 100vh;
   position: relative;
@@ -66,14 +63,21 @@ body {
 
 .statusbar { display: none; }
 
+/* Chaque écran occupe tout le viewport et scroll de façon autonome */
 .screen { display: none; }
-.screen.active { display: block; }
+.screen.active {
+  display: block;
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  background: var(--bg);
+}
 
 /* ══ SCREEN 0 — SÉRIE ══ */
 #screen-serie {
-  min-height: 840px;
   background: linear-gradient(160deg, #1A1A4E 0%, #2D3A8C 40%, #4361EE 100%);
-  position: relative; overflow: hidden;
 }
 
 .blob { position:absolute;border-radius:50%;filter:blur(40px);opacity:0.35;animation:floatBlob 6s ease-in-out infinite; }
@@ -139,7 +143,7 @@ body {
 .nav-item.active .ni { transform:translateY(-2px); }
 
 /* ══ SCREEN 1 — HOME ══ */
-#screen-home { background:#F8F9FF;min-height:840px; }
+#screen-home { background:#F8F9FF; }
 
 .home-header {
   background:linear-gradient(135deg,#1A1A4E 0%,#2D3A8C 40%,#4361EE 100%);
@@ -188,7 +192,7 @@ body {
 .dj-flag { font-size:36px;animation:floatBlob 4s ease-in-out infinite; }
 
 /* ══ SCREEN 2 — QUIZ ══ */
-#screen-quiz { background:#F8F9FF;min-height:840px;padding-bottom:100px; }
+#screen-quiz { background:#F8F9FF; padding-bottom:100px; }
 
 .quiz-header { background:linear-gradient(135deg,var(--indigo),#6B7FFF);padding:48px 20px 20px;position:relative;overflow:hidden; }
 .quiz-header-blob { width:100px;height:100px;background:var(--green);position:absolute;top:-30px;right:-30px;border-radius:50%;filter:blur(35px);opacity:0.3;animation:floatBlob 4s ease-in-out infinite; }
@@ -266,7 +270,7 @@ body {
 @keyframes confettiFall { 0%{transform:translateY(0) rotate(0deg);opacity:1} 100%{transform:translateY(300px) rotate(720deg);opacity:0} }
 
 /* ══ SCREEN 3 — RÉSULTATS ══ */
-#screen-results { background:#F8F9FF;min-height:840px; }
+#screen-results { background:#F8F9FF; }
 .results-hero { background:linear-gradient(135deg,var(--green),#04C48F);padding:52px 24px 100px;position:relative;overflow:hidden;text-align:center; }
 .res-blob1 { width:180px;height:180px;background:rgba(255,255,255,0.15);position:absolute;top:-60px;right:-60px;border-radius:50%;animation:floatBlob 6s ease-in-out infinite; }
 .res-blob2 { width:120px;height:120px;background:rgba(67,97,238,0.2);position:absolute;bottom:-30px;left:-30px;border-radius:50%;animation:floatBlob 8s 3s ease-in-out infinite; }
@@ -323,24 +327,41 @@ body {
 /* ══ COMPANION PANEL ══ */
 .companion-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);z-index:200;opacity:0;pointer-events:none;transition:opacity 0.3s; }
 .companion-overlay.open { opacity:1;pointer-events:all; }
-.companion-panel { position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);width:100%;max-width:390px;background:white;border-radius:28px 28px 0 0;z-index:201;display:flex;flex-direction:column;max-height:70vh;transition:transform 0.4s cubic-bezier(0.23,1,0.32,1);overflow:hidden;box-shadow:0 -20px 60px rgba(0,0,0,0.2); }
+.companion-panel {
+  position:fixed;bottom:0;left:50%;
+  transform:translateX(-50%) translateY(100%);
+  width:100%;max-width:430px;
+  background:white;border-radius:28px 28px 0 0;
+  z-index:201;
+  display:flex;flex-direction:column;
+  height:72vh;
+  transition:transform 0.4s cubic-bezier(0.23,1,0.32,1);
+  box-shadow:0 -20px 60px rgba(0,0,0,0.2);
+}
 .companion-panel.open { transform:translateX(-50%) translateY(0); }
-.cp-header { display:flex;align-items:center;gap:12px;padding:16px 20px;flex-shrink:0; }
+.cp-header { display:flex;align-items:center;gap:12px;padding:16px 20px;flex-shrink:0;border-radius:28px 28px 0 0; }
 .cp-header-info { flex:1; }
 .cp-header-name { font-family:'Outfit',sans-serif;font-size:16px;font-weight:900;color:white; }
 .cp-header-status { font-size:11px;color:rgba(255,255,255,0.75);font-weight:500;display:flex;align-items:center;gap:5px; }
 .status-dot { width:6px;height:6px;background:#06D6A0;border-radius:50%;animation:statusPulse 2s ease-in-out infinite; }
 @keyframes statusPulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-.cp-close { background:rgba(255,255,255,0.2);border:none;border-radius:10px;width:32px;height:32px;cursor:pointer;font-size:16px;color:white;display:flex;align-items:center;justify-content:center; }
-.cp-content { flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px; }
+.cp-close { background:rgba(255,255,255,0.2);border:none;border-radius:10px;width:32px;height:32px;cursor:pointer;font-size:16px;color:white;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+.cp-content {
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:16px;
+  display:flex;flex-direction:column;gap:12px;
+}
 .cp-content::-webkit-scrollbar { display:none; }
 
 /* Skeleton */
 .skeleton-line { height:12px;background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:skeleton 1.5s ease-in-out infinite;border-radius:6px;margin-bottom:6px; }
 @keyframes skeleton { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
-/* ══ SCREENS FICHES & MÉTHODE ══ */
-#screen-fiches,#screen-methode { background:#F8F9FF;min-height:840px; }
+/* ══ SCREENS FICHES & MÉTHODE — gérés via overlays fixed, pas des screens classiques ══ */
+#screen-fiches,#screen-methode { background:#F8F9FF; }
 .fiches-header { background:linear-gradient(135deg,#9B5DE5 0%,#C77DFF 100%);padding:52px 20px 0;position:relative;overflow:hidden; }
 .methode-header { background:linear-gradient(135deg,#EF476F 0%,#FF8C69 100%);padding:52px 20px 0;position:relative;overflow:hidden; }
 .fh-blob { width:160px;height:160px;background:rgba(255,255,255,0.15);position:absolute;top:-50px;right:-40px;border-radius:50%;animation:floatBlob 6s ease-in-out infinite; }
@@ -638,21 +659,21 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
     setTimeout(function() {
       var s = document.getElementById('splash');
       if(s) s.classList.add('exit');
-    }, 3000);
-    setTimeout(function() {
-      var s = document.getElementById('splash');
-      if(s) { s.style.opacity = '0'; s.style.transition = 'opacity 0.6s'; }
-      setTimeout(function() { if(s) s.style.display = 'none'; }, 600);
-    }, 3000);
+      setTimeout(function() {
+        if(s) s.style.display = 'none';
+      }, 650);
+    }, 2800);
   </script>
 
 
 <div class="phone">
 
-  <div class="statusbar">
-    <span>9:41</span>
-    <div style="display:flex;gap:6px;align-items:center;font-size:11px">
-      <span>●●●●</span><span>WiFi</span><span>🔋</span>
+  <div class="statusbar" id="statusBar">
+    <span id="statusTime">--:--</span>
+    <div style="display:flex;gap:5px;align-items:center;">
+      <span style="font-size:10px;letter-spacing:1px;">●●●●</span>
+      <svg width="16" height="11" viewBox="0 0 16 11" fill="white" opacity="0.9"><path d="M8 2.5C10.2 2.5 12.2 3.4 13.6 4.9L15 3.4C13.2 1.5 10.7 0.3 8 0.3C5.3 0.3 2.8 1.5 1 3.4L2.4 4.9C3.8 3.4 5.8 2.5 8 2.5Z"/><path d="M8 5.5C9.5 5.5 10.8 6.1 11.8 7.1L13.2 5.6C11.8 4.2 9.9 3.3 8 3.3C6.1 3.3 4.2 4.2 2.8 5.6L4.2 7.1C5.2 6.1 6.5 5.5 8 5.5Z"/><circle cx="8" cy="10" r="1.5"/></svg>
+      <span style="font-size:13px;">🔋</span>
     </div>
   </div>
 
@@ -884,8 +905,8 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
 </div><!-- fin .phone -->
 
 <!-- ══ SCREEN 4 : FICHES FLASH ══ -->
-<div id="screen-fiches-outer" style="display:none;position:fixed;inset:0;z-index:300;display:none;justify-content:center;align-items:flex-start;background:linear-gradient(135deg,#EEF1FD,#E0FAF4,#FFF8E1);padding:20px 12px 60px;overflow-y:auto;">
-  <div style="width:100%;max-width:390px;background:white;border-radius:44px;box-shadow:0 40px 100px rgba(67,97,238,0.2);min-height:840px;overflow:hidden;">
+<div id="screen-fiches-outer" style="display:none;position:fixed;inset:0;z-index:300;justify-content:center;align-items:flex-start;background:linear-gradient(135deg,#EEF1FD,#E0FAF4,#FFF8E1);padding:20px 12px 60px;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <div style="width:100%;max-width:390px;background:white;border-radius:44px;box-shadow:0 40px 100px rgba(67,97,238,0.15);min-height:840px;overflow:visible;">
 
     <div class="fiches-header">
       <div class="fh-blob"></div>
@@ -906,8 +927,8 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
 </div>
 
 <!-- ══ SCREEN 5 : MÉTHODE BAC ══ -->
-<div id="screen-methode-outer" style="display:none;position:fixed;inset:0;z-index:300;justify-content:center;align-items:flex-start;background:linear-gradient(135deg,#EEF1FD,#E0FAF4,#FFF8E1);padding:20px 12px 60px;overflow-y:auto;">
-  <div style="width:100%;max-width:390px;background:white;border-radius:44px;box-shadow:0 40px 100px rgba(67,97,238,0.2);min-height:840px;overflow:hidden;">
+<div id="screen-methode-outer" style="display:none;position:fixed;inset:0;z-index:300;justify-content:center;align-items:flex-start;background:linear-gradient(135deg,#EEF1FD,#E0FAF4,#FFF8E1);padding:20px 12px 60px;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <div style="width:100%;max-width:390px;background:white;border-radius:44px;box-shadow:0 40px 100px rgba(67,97,238,0.15);min-height:840px;overflow:visible;">
 
     <div class="methode-header">
       <div class="fh-blob" style="background:rgba(255,255,255,0.12);"></div>
@@ -1002,7 +1023,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
     </div>
     <button class="cp-close" onclick="closeNuur()">✕</button>
   </div>
-  <div class="cp-content" style="padding:16px;gap:12px;flex:1;overflow-y:auto;">
+  <div class="cp-content">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
       <div style="width:36px;height:36px;background:linear-gradient(135deg,#9B5DE5,#C77DFF);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">✨</div>
       <div>
@@ -1018,7 +1039,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
       <div id="nuurTipText"></div>
     </div>
   </div>
-  <div style="padding:12px 16px 22px;text-align:center;border-top:1.5px solid var(--border);">
+  <div style="padding:12px 16px 22px;text-align:center;border-top:1.5px solid var(--border);flex-shrink:0;">
     <div style="font-size:11px;color:var(--text-soft);font-weight:600;">✨ NUUR intervient uniquement après tes réponses</div>
   </div>
 </div>
@@ -1028,8 +1049,11 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
 // NAVIGATION
 // ══════════════════════════════════════
 function goTo(id) {
+  if(id === 'screen-fiches') { openFiches(); return; }
+  if(id === 'screen-methode') { openMethode(); return; }
   document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
-  document.getElementById(id).classList.add('active');
+  var target = document.getElementById(id);
+  if(target) target.classList.add('active');
   if(id === 'screen-quiz') { updateRobotMood('neutral'); }
   if(id === 'screen-home') { updateRobotMood('happy'); updateHomeProgress(); }
 }
@@ -2680,8 +2704,10 @@ function updateHomeProgress() {
   var avg = Math.round(totalPct / keys.length);
   // update arc
   var dashoffset = 188 - (188 * avg / 100);
-  document.getElementById('arcFill').style.strokeDashoffset = dashoffset;
-  document.getElementById('arcLabel').textContent = avg + '%';
+  var arcFill = document.getElementById('arcFill');
+  var arcLabel = document.getElementById('arcLabel');
+  if(arcFill) arcFill.style.strokeDashoffset = dashoffset;
+  if(arcLabel) arcLabel.textContent = avg + '%';
 }
 
 function selectSerie(card, key, dest) {
@@ -2778,19 +2804,20 @@ function afficherQuestion() {
   // Question
   document.getElementById('question-text').textContent = q.q;
 
-  // Réponses — mélange des choix (anti-biais position)
+  // Réponses — mélange anti-biais position (Fisher-Yates avec tracking d'index)
   var letters = ['A','B','C','D'];
   var html = '';
-  // Extraire le texte de la bonne réponse AVANT de mélanger
-  var correctText = q.choix[q.rep];
-  // Créer une copie mélangée des choix
-  var shuffledChoix = q.choix.slice();
-  for(var si = shuffledChoix.length - 1; si > 0; si--) {
+  // Créer tableau indexé {texte, estCorrecte}
+  var indexed = q.choix.map(function(texte, i){ return {texte: texte, correct: (i === q.rep)}; });
+  // Fisher-Yates sur les objets indexés
+  for(var si = indexed.length - 1; si > 0; si--) {
     var sj = Math.floor(Math.random() * (si+1));
-    var stmp = shuffledChoix[si]; shuffledChoix[si] = shuffledChoix[sj]; shuffledChoix[sj] = stmp;
+    var stmp = indexed[si]; indexed[si] = indexed[sj]; indexed[sj] = stmp;
   }
-  // Trouver la nouvelle position de la bonne réponse dans le tableau mélangé
-  var newCorrectPos = shuffledChoix.indexOf(correctText);
+  // La nouvelle position de la bonne réponse = index où correct===true
+  var newCorrectPos = 0;
+  indexed.forEach(function(item, pos){ if(item.correct) newCorrectPos = pos; });
+  var shuffledChoix = indexed.map(function(item){ return item.texte; });
   shuffledChoix.forEach(function(texte, displayPos) {
     html += '<div class="choice" onclick="pickAnswer(this,' + displayPos + ',' + newCorrectPos + ',' + q.pts + ')">'
       + '<div class="choice-letter">' + letters[displayPos] + '</div>'
@@ -3084,6 +3111,8 @@ function openNuurPanel() {
   document.getElementById('nuurTyping').style.display = 'flex';
   document.getElementById('nuurResponse').innerHTML = '<div class="nuur-typing"><span></span><span></span><span></span></div>';
   document.getElementById('nuurTip').style.display = 'none';
+  // Bloquer le scroll du screen derrière sur iOS
+  document.querySelectorAll('.screen.active').forEach(function(s){ s.style.overflow = 'hidden'; });
 
   var prompt = nuurLastQuestion.text
     ? 'Approfondis ce concept du Bac Djibouti 2026 lié à cette question: "' + nuurLastQuestion.text + '". Donne une explication plus complète avec un exemple similaire qui pourrait tomber au bac.'
@@ -3101,6 +3130,8 @@ function openNuurPanel() {
 function closeNuur() {
   document.getElementById('compOverlay').classList.remove('open');
   document.getElementById('compPanel').classList.remove('open');
+  // Restaurer le scroll du screen
+  document.querySelectorAll('.screen.active').forEach(function(s){ s.style.overflow = ''; });
 }
 
 async function callNuurAPI(userPrompt, callback) {
@@ -3481,12 +3512,7 @@ function closeMethode() {
   document.body.style.overflow = '';
 }
 
-var _origGoTo = goTo;
-goTo = function(id) {
-  if(id === 'screen-fiches') { openFiches(); return; }
-  if(id === 'screen-methode') { openMethode(); return; }
-  _origGoTo(id);
-};
+// Routing fiches/methode intégré directement dans goTo ci-dessus
 
 function switchFicheSerie(serie, tabEl) {
   document.querySelectorAll('#ficheSeriesTabs .fiche-tab').forEach(function(t){ t.classList.remove('active'); });
@@ -3562,6 +3588,16 @@ function toggleMethode(id) {
 afficherSerie('SG');
 updateRobotMood('happy');
 setTimeout(function(){ showDiboSpeech('Salam ! Je suis NUUR ✨ Bonne révision !'); }, 2500);
+
+// Horloge dynamique (statusbar cachée dans index.html mais prête)
+function updateClock() {
+  var el = document.getElementById('statusTime');
+  if(!el) return;
+  var now = new Date();
+  el.textContent = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+}
+updateClock();
+setInterval(updateClock, 10000);
 
 // PWA Service Worker
 if('serviceWorker' in navigator) {

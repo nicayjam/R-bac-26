@@ -131,10 +131,12 @@ body {
 
 /* ══ NAV BAR ══ */
 .nav-bar {
-  position:sticky;bottom:0;
+  position:fixed;bottom:0;left:0;right:0;
   background:white;border-top:1px solid var(--border);
-  display:flex;z-index:20;
+  display:flex;z-index:50;
   box-shadow:0 -4px 20px rgba(0,0,0,0.08);
+  /* Sécurité iOS safe-area */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 .nav-item { flex:1;padding:10px 0 14px;text-align:center;cursor:pointer;transition:all 0.2s; }
 .nav-item .ni { font-size:20px;margin-bottom:2px; }
@@ -192,7 +194,7 @@ body {
 .dj-flag { font-size:36px;animation:floatBlob 4s ease-in-out infinite; }
 
 /* ══ SCREEN 2 — QUIZ ══ */
-#screen-quiz { background:#F8F9FF; padding-bottom:100px; }
+#screen-quiz { background:#F8F9FF; padding-bottom:90px; }
 
 .quiz-header { background:linear-gradient(135deg,var(--indigo),#6B7FFF);padding:48px 20px 20px;position:relative;overflow:hidden; }
 .quiz-header-blob { width:100px;height:100px;background:var(--green);position:absolute;top:-30px;right:-30px;border-radius:50%;filter:blur(35px);opacity:0.3;animation:floatBlob 4s ease-in-out infinite; }
@@ -270,7 +272,7 @@ body {
 @keyframes confettiFall { 0%{transform:translateY(0) rotate(0deg);opacity:1} 100%{transform:translateY(300px) rotate(720deg);opacity:0} }
 
 /* ══ SCREEN 3 — RÉSULTATS ══ */
-#screen-results { background:#F8F9FF; }
+#screen-results { background:#F8F9FF;  padding-bottom:80px; }
 .results-hero { background:linear-gradient(135deg,var(--green),#04C48F);padding:52px 24px 100px;position:relative;overflow:hidden;text-align:center; }
 .res-blob1 { width:180px;height:180px;background:rgba(255,255,255,0.15);position:absolute;top:-60px;right:-60px;border-radius:50%;animation:floatBlob 6s ease-in-out infinite; }
 .res-blob2 { width:120px;height:120px;background:rgba(67,97,238,0.2);position:absolute;bottom:-30px;left:-30px;border-radius:50%;animation:floatBlob 8s 3s ease-in-out infinite; }
@@ -308,7 +310,8 @@ body {
 .recommend-text { font-size:11px;color:rgba(255,255,255,0.85);line-height:1.5; }
 
 /* ══ DIBO FLOTTANT ══ */
-.dibo-float { position:fixed;bottom:80px;left:12px;z-index:100;display:flex;flex-direction:column;align-items:center;gap:6px;transition:all 0.6s cubic-bezier(0.23,1,0.32,1); }
+.dibo-float { position:fixed;bottom:80px;left:12px;z-index:100;display:flex;flex-direction:column;align-items:center;gap:6px;transition:none; }
+.dibo-float.dragging { cursor:grabbing; will-change:left,bottom; touch-action:none; }
 .dibo-speech { background:white;border:1.5px solid var(--border);border-radius:16px 16px 16px 4px;padding:8px 12px;font-size:12px;font-weight:600;color:var(--text);max-width:160px;box-shadow:0 4px 16px rgba(0,0,0,0.12);opacity:0;transform:translateY(6px);transition:all 0.3s;pointer-events:none;line-height:1.4; }
 .dibo-speech.show { opacity:1;transform:translateY(0); }
 .dibo-lottie-wrap { position:relative;cursor:pointer; }
@@ -372,7 +375,7 @@ body {
 .fiche-tab { flex-shrink:0;background:rgba(255,255,255,0.2);border:1.5px solid rgba(255,255,255,0.3);border-radius:20px;padding:5px 14px;font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;color:rgba(255,255,255,0.9);cursor:pointer;transition:all 0.2s;white-space:nowrap; }
 .fiche-tab.active { background:white;color:var(--purple);border-color:white; }
 .methode-header .fiche-tab.active { color:var(--coral); }
-.fiches-body { padding:14px 16px 120px;display:flex;flex-direction:column;gap:10px; }
+.fiches-body { padding:14px 16px 80px;display:flex;flex-direction:column;gap:10px; }
 .fiche-card { background:white;border-radius:18px;box-shadow:0 3px 14px rgba(0,0,0,0.07);overflow:hidden;cursor:pointer;transition:all 0.25s; }
 .fiche-card:hover { transform:translateY(-2px);box-shadow:0 8px 24px rgba(155,93,229,0.15); }
 .fiche-card-header { display:flex;align-items:center;gap:10px;padding:13px 14px; }
@@ -413,7 +416,7 @@ body {
   <!-- ══ SPLASH SCREEN ORIGINAL ══ -->
   <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: #001a0d; }
 
 .splash {
   position: fixed; inset: 0;
@@ -658,10 +661,21 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
     }, 600);
     setTimeout(function() {
       var s = document.getElementById('splash');
-      if(s) s.classList.add('exit');
-      setTimeout(function() {
-        if(s) s.style.display = 'none';
-      }, 650);
+      var serie = document.getElementById('screen-serie');
+      // 1. Activer screen-serie (display:block) PENDANT que le splash est encore visible
+      if(serie) serie.classList.add('active');
+      // 2. Laisser deux frames au navigateur pour peindre screen-serie derrière le splash
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          // 3. Lancer le fade-out du splash — screen-serie est déjà peint dessous
+          if(s) {
+            s.classList.add('exit');
+            setTimeout(function() {
+              if(s) s.style.display = 'none';
+            }, 680);
+          }
+        });
+      });
     }, 2800);
   </script>
 
@@ -678,7 +692,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
   </div>
 
     <!-- ══ SCREEN 0 : CHOIX SÉRIE ══ -->
-  <div class="screen active" id="screen-serie">
+  <div class="screen" id="screen-serie">
     <div class="blob blob1"></div><div class="blob blob2"></div><div class="blob blob3"></div><div class="blob blob4"></div>
     <div class="particle" style="width:8px;height:8px;background:#06D6A0;left:15%;animation-duration:8s;animation-delay:0s"></div>
     <div class="particle" style="width:6px;height:6px;background:#FFD166;left:35%;animation-duration:10s;animation-delay:2s"></div>
@@ -765,6 +779,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
       <div class="home-header-blob1"></div>
       <div class="home-header-blob2"></div>
       <div class="home-greeting">Bonne révision 👋</div>
+      <button id="musicToggleBtn" onclick="toggleMusic()" title="Musique d'ambiance" style="position:absolute;top:14px;right:16px;z-index:10;background:rgba(255,255,255,0.18);border:1.5px solid rgba(255,255,255,0.35);border-radius:50%;width:38px;height:38px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;backdrop-filter:blur(4px);" aria-label="Toggle musique">🔇</button>
       <div class="home-title">Quiz Révision<br><span>Bac Djibouti</span></div>
       <div class="home-serie-tag" id="home-serie-tag" onclick="goTo('screen-serie')">Terminale SG ↓</div>
       <div class="progress-arc-wrap">
@@ -905,8 +920,8 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
 </div><!-- fin .phone -->
 
 <!-- ══ SCREEN 4 : FICHES FLASH ══ -->
-<div id="screen-fiches-outer" style="display:none;position:fixed;inset:0;z-index:300;justify-content:center;align-items:flex-start;background:linear-gradient(135deg,#EEF1FD,#E0FAF4,#FFF8E1);padding:20px 12px 60px;overflow-y:auto;-webkit-overflow-scrolling:touch;">
-  <div style="width:100%;max-width:390px;background:white;border-radius:44px;box-shadow:0 40px 100px rgba(67,97,238,0.15);min-height:840px;overflow:visible;">
+<div id="screen-fiches-outer" style="display:none;position:fixed;inset:0;z-index:300;background:linear-gradient(135deg,#EEF1FD,#E0FAF4,#FFF8E1);overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:100%;">
+  <div style="width:100%;max-width:390px;margin:20px auto 40px;background:white;border-radius:44px;box-shadow:0 40px 100px rgba(67,97,238,0.15);overflow:visible;">
 
     <div class="fiches-header">
       <div class="fh-blob"></div>
@@ -927,8 +942,8 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
 </div>
 
 <!-- ══ SCREEN 5 : MÉTHODE BAC ══ -->
-<div id="screen-methode-outer" style="display:none;position:fixed;inset:0;z-index:300;justify-content:center;align-items:flex-start;background:linear-gradient(135deg,#EEF1FD,#E0FAF4,#FFF8E1);padding:20px 12px 60px;overflow-y:auto;-webkit-overflow-scrolling:touch;">
-  <div style="width:100%;max-width:390px;background:white;border-radius:44px;box-shadow:0 40px 100px rgba(67,97,238,0.15);min-height:840px;overflow:visible;">
+<div id="screen-methode-outer" style="display:none;position:fixed;inset:0;z-index:300;background:linear-gradient(135deg,#EEF1FD,#E0FAF4,#FFF8E1);overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:100%;">
+  <div style="width:100%;max-width:390px;margin:20px auto 40px;background:white;border-radius:44px;box-shadow:0 40px 100px rgba(67,97,238,0.15);overflow:visible;">
 
     <div class="methode-header">
       <div class="fh-blob" style="background:rgba(255,255,255,0.12);"></div>
@@ -950,7 +965,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
 <!-- ══ DIBO ══ -->
 <div class="dibo-float" id="diboFloat">
   <div class="dibo-speech" id="diboSpeech">💡 Clique sur moi après une réponse !</div>
-  <div class="dibo-lottie-wrap" id="diboWrap" onclick="onNuurClick()" title="DIBO — Compagnon pédagogique">
+  <div class="dibo-lottie-wrap" id="diboWrap" title="DIBO — Compagnon pédagogique" style="touch-action:none;user-select:none;-webkit-user-select:none;">
     <div class="dibo-ring neutral" id="diboRing"></div>
     <svg id="diboPlayer" viewBox="0 0 100 120" width="90" height="108" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">
       <style>
@@ -1048,14 +1063,19 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
 // ══════════════════════════════════════
 // NAVIGATION
 // ══════════════════════════════════════
+// Verrou anti-double-touch : debounce 80ms pour éviter les taps fantômes mobiles
+var _navLocked = false;
 function goTo(id) {
+  if(_navLocked) return;
   if(id === 'screen-fiches') { openFiches(); return; }
   if(id === 'screen-methode') { openMethode(); return; }
+  _navLocked = true;
   document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
   var target = document.getElementById(id);
   if(target) target.classList.add('active');
   if(id === 'screen-quiz') { updateRobotMood('neutral'); }
   if(id === 'screen-home') { updateRobotMood('happy'); updateHomeProgress(); }
+  setTimeout(function(){ _navLocked = false; }, 80);
 }
 
 // ══════════════════════════════════════
@@ -1207,6 +1227,524 @@ addQ('S','Mathématiques S','Logarithme','ln(1) vaut :',['1','e','-1','0'],3,20,
 addQ('S','Mathématiques S','Intégration','∫₀¹ 2x dx vaut :',['1','2','0','4'],0,55,4,'calcul_complexe');
 addQ('S','Mathématiques S','Intégration','La primitive de f(x) = 3x² est :',['F(x) = 6x + C','F(x) = x³ + C','F(x) = 9x³ + C','F(x) = x² + C'],1,40,3,'calcul_simple');
 
+// ══════════════════════════════════════════════════════════════════════════════
+// PATCH SPRINT 4 — Bac Djibouti 2026
+// Sources : Bac Blanc Maths S déc.2024 · Banque 50 exos TS 2025-2026
+//           Bac Blanc ES déc.2024 + janv.2026 · Bac Blanc L déc.2024
+//           Bac Blanc SG mars 2026
+//           Sujets Éco-Droit SG : 2020, 2021, 2022, 2025
+// Insertion : après la dernière ligne addQ('S','Mathématiques S'…) (intégration)
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════
+// MATHÉMATIQUES SÉRIE S — +25 QUESTIONS
+// Banque 50 exos (Inspection Maths DJ) + Bac Blanc S déc.2024
+// Chapitres : Suites · Limites/Dérivation · Logarithme/Exponentielle
+//             Intégrale · Complexes · Géométrie espace · Probabilité cond.
+//             Congruences · Nombres complexes
+// ══════════════════════════════════════
+
+// ── SUITES (Exos 1-7 banque, Bac Blanc S déc.2024 Ex3) ──
+addQ('S','Mathématiques S','Suites',
+  'Soit (uₙ) définie par u₀ = −2 et uₙ₊₁ = ½uₙ + n + ½. On pose vₙ = uₙ − n. La suite (vₙ) est :',
+  ['Arithmétique de raison 1','Géométrique de raison ½','Ni arithmétique ni géométrique','Constante'],
+  1,35,3,'application');
+
+addQ('S','Mathématiques S','Suites',
+  'La suite (uₙ) définie par uₙ₊₁ = 2uₙ + 1 et u₀ = 0 admet pour terme général :',
+  ['uₙ = 2ⁿ','uₙ = 2ⁿ − 1','uₙ = n × 2ⁿ','uₙ = 2ⁿ + 1'],
+  1,35,3,'application');
+
+addQ('S','Mathématiques S','Suites',
+  'La suite (uₙ) définie par uₙ₊₁ = 0,9uₙ + 42 et u₀ = 280 converge vers :',
+  ['0','280','420','380'],
+  2,30,3,'application');
+
+addQ('S','Mathématiques S','Suites',
+  'Si (tₙ) est arithmétique de raison r = ½ et t₀ = ½, la somme S = t₀ + t₁ + … + tₙ vaut :',
+  ['n(n+1)/4 + (n+1)/2','(n+1)(n+2)/4','(n+1)/2 + n²/4','(n+1)(n+4)/4'],
+  1,45,4,'calcul_complexe');
+
+// ── LIMITES, DÉRIVATION & ÉTUDE DE FONCTIONS (Banque exos 8-12) ──
+addQ('S','Mathématiques S','Dérivation',
+  'f est définie sur ]−1 ; +∞[ par f(x) = (x³ − 3)/(x + 2). La droite oblique asymptote à Cf quand x→+∞ est :',
+  ['y = x − 2','y = x²','y = x² − 2x + 4','y = 3x − 2'],
+  2,40,4,'application');
+
+addQ('S','Mathématiques S','Dérivation',
+  'f(x) = 2x³ + 3x² − 2. L\'équation f(x) = 0 admet dans [0 ; 1] :',
+  ['Aucune solution','Deux solutions','Une et une seule solution α (TVI : f(0) = −2 < 0 et f(1) = 3 > 0)','Une infinité de solutions'],
+  2,35,3,'application');
+
+addQ('S','Mathématiques S','Dérivation',
+  'La tangente à la courbe de f(x) = (x²+x+1)/(x²−x+1) au point d\'abscisse 0 a pour équation :',
+  ['y = x − 1','y = 2x + 1','y = x + 1','y = −x + 1'],
+  1,40,4,'application');
+
+// ── LOGARITHME NÉPERIEN & EXPONENTIELLE (Banque exos 13-20) ──
+addQ('S','Mathématiques S','Logarithme',
+  'g(x) = 2ln(x) + x² − 2, définie sur ]0 ; +∞[. L\'équation g(x) = 0 a une unique solution α dans :',
+  [']0 ; 1[','[1 ; e[',']e ; +∞[','[0 ; 1]'],
+  0,30,3,'application');
+
+addQ('S','Mathématiques S','Logarithme',
+  'A = 2ln(1/4) + 3ln(2) + ln(4/e) vaut :',
+  ['0','ln(2) − 1','ln(2)','−1'],
+  1,35,3,'calcul_simple');
+
+addQ('S','Mathématiques S','Logarithme',
+  'La dérivée de f(x) = ln²(x)/x² sur ]0 ; +∞[ s\'annule en x = :',
+  ['x = 1','x = e','x = 1/e','x = e²'],
+  1,35,3,'calcul_simple');
+
+addQ('S','Mathématiques S','Logarithme',
+  'g(x) = x − 3 + eˣ. La dérivée g\'(x) = 1 + eˣ est :',
+  ['Toujours nulle','Toujours négative','Toujours positive — donc g est strictement croissante','Nulle en x = 0 uniquement'],
+  2,25,3,'connaissance');
+
+addQ('S','Mathématiques S','Logarithme',
+  'L\'ensemble des solutions de l\'inéquation e^(x²−x−2) > 1 est :',
+  [']−1 ; 2[','Ø',']−∞ ; −1[ ∪ ]2 ; +∞[',']−∞ ; 1['],
+  2,35,3,'application');
+
+// ── INTÉGRALE (Banque exos 21-25) ──
+addQ('S','Mathématiques S','Intégration',
+  '∫₀² eˣ/(eˣ + 1) dx vaut (sachant que ∫₀² 1/(eˣ+1) dx + ∫₀² eˣ/(eˣ+1) dx = 2) :',
+  ['2 + ln(e²+1)','2 − ln(e²+1) + ln(2)','ln(e²+1) − ln(2)','e² − 1'],
+  2,55,4,'calcul_complexe');
+
+addQ('S','Mathématiques S','Intégration',
+  'F(x) = 2x·ln(x) − 3x est une primitive de f(x) = 2ln(x) − 1 sur ]0 ; +∞[. L\'aire entre Cf, l\'axe Ox et x=1, x=4 vaut environ :',
+  ['2,09 u.a.','2,68 u.a.','3,14 u.a.','1,50 u.a.'],
+  1,55,4,'calcul_complexe');
+
+addQ('S','Mathématiques S','Intégration',
+  '∫₋₁² (x² − 1) dx vaut :',
+  ['0','2','−2','3'],
+  0,45,3,'calcul_simple');
+
+// ── NOMBRES COMPLEXES (Banque exos 26-30, Bac Blanc S déc.2024 Ex1) ──
+addQ('S','Mathématiques S','Nombres complexes',
+  'Si z = x + iy, la partie réelle de Z = z² + z̄ est :',
+  ['x² + y² − x + x','x² − y² + x','x² + y² + x','x² − y² − x'],
+  1,35,3,'calcul_simple');
+
+addQ('S','Mathématiques S','Nombres complexes',
+  'Pour tout réel x, cos x + sin x est égal à :',
+  ['√2 cos(x + π/4)','√2 cos(x − π/4)','√2 sin(x − π/4)','2 cos(x + π/4)'],
+  0,25,3,'connaissance');
+
+addQ('S','Mathématiques S','Nombres complexes',
+  'z₁ = 2(1+i) et z₂ = (√3/2) − i/2. Le module de Z = z₁/z₂ vaut :',
+  ['2','2√2','4','√2'],
+  2,35,3,'calcul_simple');
+
+addQ('S','Mathématiques S','Nombres complexes',
+  'P(z) = z³ − 3z² + 4z − 2. Sachant que P(1) = 0, le trinôme z² + az + b tel que P(z) = (z−1)(z²+az+b) donne a = :',
+  ['−2','2','−1','0'],
+  0,35,3,'application');
+
+// ── GÉOMÉTRIE DANS L'ESPACE (Banque exos 31-36) ──
+addQ('S','Mathématiques S','Géométrie espace',
+  'Dans le cube ABCDEFGH d\'arête 1 (repère (A; AB, AE, AD)), le vecteur AC⃗ a pour coordonnées :',
+  ['(1,0,1)','(0,1,1)','(1,1,0)','(1,1,1)'],
+  2,30,3,'calcul_simple');
+
+addQ('S','Mathématiques S','Géométrie espace',
+  'Le vecteur n⃗(1 ; −6 ; 7) est normal au plan (ABC) si A(1;1;2), B(3;6;6), C(5;4;4). L\'équation cartésienne du plan (ABC) est de la forme :',
+  ['x − 6y + 7z = 0','x − 6y + 7z + 8 = 0','x − 6y + 7z − 8 = 0','6x − y + 7z = 0'],
+  2,40,4,'application');
+
+addQ('S','Mathématiques S','Géométrie espace',
+  'Le reste de 2024²⁰²⁴ divisé par 5 est :',
+  ['1','2','3','4'],
+  0,35,3,'application');
+
+// ── PROBABILITÉ CONDITIONNELLE (Banque exos 37-41) ──
+addQ('S','Mathématiques S','Probabilité',
+  'Une urne : 2 rouges (R), 5 jaunes (J), 3 bleues (B). Tirage sans remise. P(B₁ ∩ B₂) vaut :',
+  ['3/10','1/15','3/25','9/100'],
+  1,45,4,'calcul_complexe');
+
+addQ('S','Mathématiques S','Probabilité',
+  'Trois candidats A, B, C obtiennent 1/2, 3/10 et 1/5 des voix. P(garçon|A) = 0,4 ; P(G|B) = 0,5 ; P(G|C) = 0,3. La probabilité d\'interroger un garçon est :',
+  ['0,4','0,41','0,39','0,50'],
+  1,45,4,'calcul_complexe');
+
+addQ('S','Mathématiques S','Probabilité',
+  'La loi normale N(μ ; σ²) vérifie : P(X ≤ μ) = :',
+  ['0,25','0,625','0,5','0,75'],
+  2,20,2,'connaissance');
+
+// ══════════════════════════════════════
+// MATHÉMATIQUES SÉRIE ES — +18 QUESTIONS
+// Bac Blanc ES déc.2024 + janv.2026
+// ══════════════════════════════════════
+
+// ── SUITES ES (Ex4 janv.2026 : centrale solaire) ──
+addQ('ES','Maths ES','Suites',
+  'Une centrale produit u₀ = 280 unités. La suite vérifie uₙ₊₁ = 0,9uₙ + 42. La production au mois suivant est :',
+  ['252 unités','294 unités','322 unités','280 unités'],
+  1,40,3,'calcul_simple');
+
+addQ('ES','Maths ES','Suites',
+  'On pose vₙ = uₙ − 420 avec uₙ₊₁ = 0,9uₙ + 42 et u₀ = 280. La suite (vₙ) est géométrique de raison :',
+  ['0,9','0,42','42','−0,9'],
+  0,30,3,'application');
+
+addQ('ES','Maths ES','Suites',
+  'La limite de la suite (uₙ) définie par uₙ₊₁ = 0,9uₙ + 42 est :',
+  ['0','280','380','420'],
+  3,25,3,'connaissance');
+
+addQ('ES','Maths ES','Suites',
+  'La suite (uₙ) définie par u₀ = 35 et uₙ₊₁ = 0,6uₙ + 100 vérifie vₙ = uₙ − 80 est géométrique de raison 0,4. uₙ vaut :',
+  ['200 × 0,4ⁿ','200 × 0,4ⁿ + 80','0,6(n+1) + 200','0,6n + 200'],
+  1,35,3,'application');
+
+// ── FONCTIONS ES (Ex3 janv.2026 : énergie solaire / Ex3 déc.2024 : f(x)=6/(x+1)) ──
+addQ('ES','Maths ES','Fonctions',
+  'f(x) = 6/(x+1) définie sur [0 ; +∞[. La limite de f quand x → +∞ est :',
+  ['6','1','0','+∞'],
+  2,20,2,'connaissance');
+
+addQ('ES','Maths ES','Fonctions',
+  'f\'(x) de la fonction f(x) = 6/(x+1) vaut :',
+  ['6/(x+1)²','−6/(x+1)²','6/(x+1)','−6(x+1)'],
+  1,25,3,'calcul_simple');
+
+addQ('ES','Maths ES','Fonctions',
+  'f est strictement décroissante sur [0 ; +∞[ et f(0) = 6, f → 0⁺. L\'équation f(x) = 0,9 admet une unique solution α dans :',
+  ['[0 ; 1]','[5 ; 6]','[10 ; 12]','[50 ; 60]'],
+  1,30,3,'application');
+
+addQ('ES','Maths ES','Fonctions',
+  'g(x) = x³ − x − 1. Sachant que g\'(x) = 3x² − 1 et g\'(x) = 0 pour x = 1/√3 ≈ 0,58, l\'équation g(x) = 0 admet :',
+  ['Aucune solution réelle','Deux solutions réelles','Une unique solution réelle α','Trois solutions réelles'],
+  2,30,3,'application');
+
+addQ('ES','Maths ES','Fonctions',
+  'La dérivée de g(x) = 3x² + 5x − 2/x sur R\\ {0} est :',
+  ['g\'(x) = 3x + 5 − 2/x','g\'(x) = 6x + 5 − 2/x','g\'(x) = (6x³ + 5x² + 2)/x²','g\'(x) = 6x² + 5x + 2/x²'],
+  2,35,3,'calcul_simple');
+
+// ── STATISTIQUES & RÉGRESSION ES (Ex4 déc.2024 : boisson / Ex3 janv.2026 : solaire) ──
+addQ('ES','Maths ES','Statistiques',
+  'La droite d\'ajustement y = 1,2x + 100 modélise l\'indice de consommation. G(4 ; 104,8) est le point moyen. Pour vérifier que G ∈ (d) : y = 1,2 × 4 + 100 = :',
+  ['104','104,4','104,8','105,2'],
+  2,30,3,'calcul_simple');
+
+addQ('ES','Maths ES','Statistiques',
+  'La droite (d) : y = 18,7x + 120,9 modélise la production solaire. En 2026 (rang x = 7), la production prévue est :',
+  ['232 millions kWh','242 millions kWh','251 millions kWh','261 millions kWh'],
+  2,35,3,'calcul_simple');
+
+addQ('ES','Maths ES','Statistiques',
+  'Le taux d\'évolution global du nombre de véhicules immatriculés D à Djibouti de 2001 (782) à 2010 (2154) est de :',
+  ['175 %','11,9 %','10,7 %','275 %'],
+  0,35,3,'calcul_simple');
+
+// ── PROBABILITÉ & FLUCTUATION ES ──
+addQ('ES','Maths ES','Probabilités',
+  'X suit N(45 ; 12²). La probabilité p(9 ≤ X ≤ 81) correspond à p(μ − 3σ ≤ X ≤ μ + 3σ). Elle vaut environ :',
+  ['0,954','0,997','0,683','0,693'],
+  1,30,3,'connaissance');
+
+addQ('ES','Maths ES','Probabilités',
+  'Une enquête de 200 élèves : 72% satisfaits. Lycée : 1300 demi-pensionnaires. Intervalle de confiance à 95% pour le nombre de satisfaits :',
+  ['[900 ; 972]','[844 ; 1028]','[1143 ; 1300]','[780 ; 1000]'],
+  1,40,3,'calcul_complexe');
+
+addQ('ES','Maths ES','Probabilités',
+  'Une association sportive de 160 adhérents compte 50 femmes. La fréquence des hommes est de 110/160 ≈ 69 %. Or 56 % des habitants sont des hommes. L\'intervalle de fluctuation à 95% pour n=160 et p=0,56 est environ [0,49 ; 0,63]. Que conclut-on ?',
+  ['La fréquence 69 % est dans l\'intervalle — résultat cohérent','69 % est hors de l\'intervalle [0,49 ; 0,63] → la fréquence d\'hommes dans l\'association est anormalement élevée','On ne peut rien conclure','L\'échantillon est trop grand'],
+  1,35,3,'application');
+
+addQ('ES','Maths ES','Probabilités',
+  'Un sondage de 200 habitants : 40 pratiquent le sport. I_fluctuation = [0,18 ; 0,30]. Sachant que p₀ = 0,24 (24% de la population) :',
+  ['0,24 est hors de l\'intervalle — résultat incohérent','0,24 est dans [0,18 ; 0,30] → résultat compatible avec la proportion réelle','On rejette l\'hypothèse','L\'intervalle est trop large pour conclure'],
+  1,30,3,'application');
+
+// ══════════════════════════════════════
+// MATHÉMATIQUES SÉRIE L — +12 QUESTIONS
+// Bac Blanc L déc.2024
+// ══════════════════════════════════════
+
+addQ('L','Maths-Info L','Suites et taux',
+  'Le programme Python : taux(1500, 2000, 6) calcule le taux annuel moyen sur 6 ans de 1500 à 2000 FDJ. Il affiche :',
+  ['4,91 %','−4,91 %','33,3 %','6 %'],
+  0,30,3,'application');
+
+addQ('L','Maths-Info L','Statistiques',
+  'Dans un tableau (2 lignes, 5 colonnes), f(x) = B1^3 − 2*B1^2 + 14 saisie en B2 et recopiée donne f(−3) = :',
+  ['−31','11','14','31'],
+  0,30,3,'calcul_simple');
+
+addQ('L','Maths-Info L','Probabilités',
+  'Arbre de probabilités : P(A) = 0,3, P(B|A) = 0,25. P(Ā) = 0,7, P(B|Ā) = 0,35. P(B) vaut :',
+  ['0,6','0,32','0,05','0,25'],
+  1,35,3,'calcul_simple');
+
+addQ('L','Maths-Info L','Fonctions',
+  'La fonction f(x) = 4 − x² définie sur [0 ; 2]. L\'aire du plus grand rectangle inscrit sous Cf est maximisée quand x ≈ :',
+  ['1,15 (√(4/3))','2','1','0,5'],
+  0,35,3,'application');
+
+addQ('L','Maths-Info L','Probabilités',
+  'Enquête de 2500 élèves (collège+lycée, garçons+filles, OUI/NON tabac). P(fille) = 1200/2500. P(élève de collège) = 1000/2500. Ces deux événements permettent de calculer des probabilités :',
+  ['Conditionnelles uniquement','Simples, conditionnelles et d\'intersection','Uniquement d\'union','Seulement si les événements sont indépendants'],
+  1,25,3,'connaissance');
+
+addQ('L','Maths-Info L','Statistiques',
+  'Le SMFM (salaire moyen) passe de 5000 à 8000 de 2000 à 2005. Le taux d\'évolution de 2000 à 2005 est :',
+  ['30 %','40 %','60 %','50 %'],
+  2,30,3,'calcul_simple');
+
+addQ('L','Maths-Info L','Statistiques',
+  'Le taux annuel moyen d\'évolution du SMFM entre 2000 et 2020, sachant qu\'il passe de 5000 à 15000 FDJ sur 20 ans, est :',
+  ['3 %','5,65 %','10 %','15 %'],
+  1,30,3,'calcul_simple');
+
+addQ('L','Maths-Info L','Statistiques',
+  'Si le SMFM de 2020 (15000 FDJ) évolue au taux annuel de 5,65 % pendant 5 ans, le SMFM 2025 prévu est :',
+  ['15 847 FDJ','17 240 FDJ','19 744 FDJ','20 000 FDJ'],
+  2,35,3,'calcul_simple');
+
+addQ('L','Maths-Info L','Probabilités',
+  'L\'inéquation x³ − 3x² + 1 < x − 1 a pour solutions l\'ensemble :',
+  [']−∞ ; −1[ ∪ ]3 ; +∞[',']−∞ ; −1[ ∪ ]1 ; 3[','Aucune solution',']−1 ; 3['],
+  0,35,3,'application');
+
+addQ('L','Maths-Info L','Probabilités',
+  'L\'équation x³ − 3x² + 1 = 0 admet exactement :',
+  ['Aucune solution réelle','2 solutions réelles','3 solutions réelles','1 solution réelle'],
+  2,30,3,'application');
+
+addQ('L','Maths-Info L','Algorithmique',
+  'Algorithme : u=1 ; for i in range(3): u = −2*u − 7. La valeur affichée est :',
+  ['−23','1','−3','41'],
+  3,40,3,'calcul_simple');
+
+addQ('L','Maths-Info L','Statistiques',
+  'La fréquence des hommes dans une association de 160 adhérents (50 femmes) est :',
+  ['50/160 ≈ 31 %','110/160 ≈ 69 %','160/110 ≈ 69 %','50 %'],
+  1,25,2,'calcul_simple');
+
+// ══════════════════════════════════════
+// MATHÉMATIQUES SÉRIE SG — +14 QUESTIONS
+// Bac Blanc SG mars 2026 (QCM + Ex2,3,4)
+// ══════════════════════════════════════
+
+addQ('SG','Maths SG','Statistiques',
+  'Série : 2 ; 4 ; 5 ; 7 ; 11 ; 17 ; 19 ; 32. La moyenne x̄ et l\'écart-type σ valent :',
+  ['x̄ = 12,125 et σ ≈ 10,1','x̄ = 12 et σ = 10','x̄ = 12,125 et σ ≈ 9,4','x̄ = 12,5 et σ ≈ 8'],
+  0,35,3,'calcul_simple');
+
+addQ('SG','Maths SG','Évolutions',
+  'Une valeur augmente de 30 %, puis de 20 %, puis baisse de 10 %. Le taux d\'évolution global est :',
+  ['40 %','40,4 %','Environ 40 %','Environ 12 %'],
+  1,40,3,'calcul_complexe');
+
+addQ('SG','Maths SG','Évolutions',
+  'Le taux d\'évolution moyen correspondant à +30 %, +20 %, −10 % est (environ) :',
+  ['13 %','12 %','40 %','11 %'],
+  1,35,3,'calcul_simple');
+
+addQ('SG','Maths SG','Loi normale',
+  'La courbe de la loi normale centrée réduite est symétrique par rapport à 0 et l\'aire totale vaut 1. Si la surface grisée est la moitié droite (de 0 à +∞), l\'aire A est :',
+  ['A = 2','A < 0,5','A > 0,5','A = 0'],
+  2,20,2,'connaissance');
+
+addQ('SG','Maths SG','Algorithmique Python',
+  'Action cotée 5700 FDJ, +3% par mois. Le programme Python qui renvoie le nombre de mois pour dépasser 20 000 FDJ est :',
+  ['while v < 20000 : m=m+1 ; v=v*1.03','for i in range(20000) : v=v*1.03','while v > 20000 : m=m+1 ; v=v*1.03','while v != 20000 : m=m+1'],
+  0,35,3,'application');
+
+addQ('SG','Maths SG','Intervalles de fluctuation',
+  'Enquête : 200 élèves, 72 % satisfaits. Lycée de 1300 demi-pensionnaires. Intervalle de confiance à 95 % pour le nombre de satisfaits est :',
+  ['[900 ; 972]','[844 ; 1028]','[1143 ; 1300]','[840 ; 1020]'],
+  1,40,3,'calcul_complexe');
+
+addQ('SG','Maths SG','Régression',
+  'Données consommation (L/100km) 2016-2025 : point moyen G(5,5 ; 8,2). La droite de régression passe par G. Pour 2027 (rang 12), avec d : y = −0,073x + 8,6, la consommation prévue est :',
+  ['7,72 L/100km','7,55 L/100km','7,90 L/100km','8,10 L/100km'],
+  1,40,3,'calcul_simple');
+
+addQ('SG','Maths SG','Régression',
+  'L\'ajustement affine d\'un nuage de points est envisageable si :',
+  ['Les points sont alignés et le coefficient de corrélation r est proche de ±1','Il y a exactement 10 points','La moyenne est positive','La variance est nulle'],
+  0,25,2,'connaissance');
+
+addQ('SG','Maths SG','Statistiques',
+  'Un club de 80 élèves compte 20 filles. La fréquence des garçons est 60/80 = 75 %. Or le lycée a 62 % de garçons. L\'intervalle de fluctuation pour n=80, p=0,62 est environ [0,51 ; 0,73]. Que conclut-on ?',
+  ['75 % est dans [0,51 ; 0,73] → résultat compatible avec les 62 % du lycée','75 % est hors de l\'intervalle → sur-représentation des garçons dans le club','On ne peut rien conclure','L\'intervalle est incorrect'],
+  0,35,3,'application');
+
+addQ('SG','Maths SG','Fonctions',
+  'f(x) = 2x³ + 3x² − 2. f est croissante sur ]−∞ ; −1[ et ]0 ; +∞[, décroissante sur ]−1 ; 0[. L\'équation f(x) = 0 a dans [0 ; +∞[ :',
+  ['Aucune solution','Exactement une solution α (f(0) = −2 < 0 et f→+∞)','Deux solutions','Une infinité de solutions'],
+  1,30,3,'application');
+
+addQ('SG','Maths SG','Probabilités',
+  'Un sondage de 160 élèves : 40 ont un compte Facebook. L\'intervalle de confiance à 95 % est I_conf = [f − 1/√n ; f + 1/√n] avec f = 40/160 = 0,25. Il vaut :',
+  ['[0,17 ; 0,33]','[0,20 ; 0,30]','[0,10 ; 0,40]','[0,25 ; 0,35]'],
+  0,35,3,'calcul_simple');
+
+addQ('SG','Maths SG','Intérêts composés',
+  'Un capital de 500 000 FDJ placé à 5 % par an en intérêts composés pendant 4 ans donne une valeur acquise de :',
+  ['600 000 FDJ','607 753 FDJ','620 000 FDJ','625 000 FDJ'],
+  1,45,4,'calcul_complexe');
+
+addQ('SG','Maths SG','Intérêts simples',
+  'Annuités constantes de remboursement : emprunt de 1 200 000 FDJ sur 4 ans à 6%. Les intérêts de la 1ère année sont :',
+  ['60 000 FDJ','72 000 FDJ','120 000 FDJ','48 000 FDJ'],
+  1,40,3,'calcul_simple');
+
+addQ('SG','Maths SG','Évolutions',
+  'L\'indice de consommation suit y = 1,2x + 100 (rang 0 = année 2000). La valeur prévue pour 2026 (rang 26) est :',
+  ['130,2','131,2','131','131,5'],
+  1,35,3,'calcul_simple');
+
+// ══════════════════════════════════════
+// ÉCO-DROIT SG — +24 QUESTIONS
+// Sources : Sujets Bac 2020, 2021, 2022, 2025 (SUJET2_ED…)
+// Chapitres : Droit des contrats · Droit des sociétés
+//             Droit du travail · Droit de la responsabilité
+//             Économie : marché des biens, croissance, monnaie
+// ══════════════════════════════════════
+
+// ── DROIT DES CONTRATS ──
+addQ('SG','Economie-Droit','Droit des contrats',
+  'Les conditions de validité d\'un contrat sont au nombre de :',
+  ['2 : consentement et capacité','3 : consentement, capacité, objet licite','4 : consentement, capacité, objet licite, cause','5 : consentement, capacité, objet, cause, forme écrite'],
+  1,25,3,'juridique');
+
+addQ('SG','Economie-Droit','Droit des contrats',
+  'Le dol est un vice du consentement qui désigne :',
+  ['Une erreur commise de bonne foi','Une violence physique ou morale','Des manœuvres frauduleuses destinées à tromper un cocontractant pour l\'amener à contracter','L\'incapacité juridique d\'une partie'],
+  2,30,3,'juridique');
+
+addQ('SG','Economie-Droit','Droit des contrats',
+  'La force obligatoire du contrat signifie que :',
+  ['Le contrat peut être modifié unilatéralement par l\'une des parties','Les parties peuvent se désengager à tout moment','Le contrat s\'impose aux parties comme la loi — elles doivent l\'exécuter fidèlement','Seul le juge peut l\'annuler'],
+  2,25,3,'juridique');
+
+addQ('SG','Economie-Droit','Droit des contrats',
+  'La nullité relative d\'un contrat peut être demandée par :',
+  ['Toute personne','Le procureur uniquement','La partie protégée (victime du vice du consentement ou incapable)','Le juge d\'office'],
+  2,30,3,'juridique');
+
+// ── DROIT DES SOCIÉTÉS ──
+addQ('SG','Economie-Droit','Droit des sociétés',
+  'La SARL (Société à Responsabilité Limitée) se caractérise par :',
+  ['Une responsabilité illimitée des associés','Des actions cotées en bourse','Une responsabilité limitée aux apports et un capital social librement fixé','L\'obligation d\'au moins 7 associés'],
+  2,25,3,'juridique');
+
+addQ('SG','Economie-Droit','Droit des sociétés',
+  'La SA (Société Anonyme) est obligatoirement dirigée par :',
+  ['Un gérant unique','Un conseil d\'administration ou un directoire','Un seul actionnaire majoritaire','L\'assemblée générale directement'],
+  1,25,3,'juridique');
+
+addQ('SG','Economie-Droit','Droit des sociétés',
+  'Le capital social d\'une société représente :',
+  ['Les bénéfices distribués aux associés','La valeur des apports des associés au moment de la création','Les dettes de la société','Le chiffre d\'affaires annuel'],
+  1,20,2,'juridique');
+
+addQ('SG','Economie-Droit','Droit des sociétés',
+  'L\'assemblée générale ordinaire (AGO) délibère à la majorité :',
+  ['De tous les associés (unanimité)','Des deux tiers','Simple (plus de 50 % des voix)','Des trois quarts'],
+  2,25,3,'juridique');
+
+// ── DROIT DU TRAVAIL (Djiboutien) ──
+addQ('SG','Economie-Droit','Droit du travail',
+  'Selon le Code du travail djiboutien, la durée légale du travail est de :',
+  ['35 heures par semaine','40 heures par semaine','48 heures par semaine','44 heures par semaine'],
+  1,20,2,'connaissance');
+
+addQ('SG','Economie-Droit','Droit du travail',
+  'La procédure légale de licenciement individuel pour motif personnel exige :',
+  ['Un simple courrier de l\'employeur','La convocation à entretien préalable, puis notification écrite motivée respectant un délai','L\'accord de l\'inspection du travail avant tout licenciement','Le vote des salariés'],
+  1,30,3,'juridique');
+
+addQ('SG','Economie-Droit','Droit du travail',
+  'Le harcèlement moral au travail est légalement caractérisé par :',
+  ['Une seule remarque blessante de l\'employeur','Des agissements répétés ayant pour objet ou effet une dégradation des conditions de travail','Un conflit ponctuel entre collègues','Un avertissement disciplinaire'],
+  1,30,3,'juridique');
+
+addQ('SG','Economie-Droit','Droit du travail',
+  'La rupture conventionnelle du contrat de travail est :',
+  ['Une démission déguisée','Un licenciement économique','Une rupture d\'un commun accord entre employeur et salarié, homologuée par l\'inspection du travail','Possible sans aucune indemnité'],
+  2,25,3,'juridique');
+
+// ── DROIT DE LA RESPONSABILITÉ ──
+addQ('SG','Economie-Droit','Responsabilité civile',
+  'La responsabilité civile contractuelle suppose l\'existence de :',
+  ['Un contrat entre les parties, une faute d\'exécution, et un préjudice','Un délit pénal','Une infraction au code pénal','Un accord syndical'],
+  0,25,3,'juridique');
+
+addQ('SG','Economie-Droit','Responsabilité civile',
+  'La responsabilité du fait des produits défectueux engage :',
+  ['Uniquement le vendeur au détail','Le fabricant — même sans faute prouvée (responsabilité sans faute)','L\'État producteur','L\'assureur du consommateur'],
+  1,30,3,'juridique');
+
+addQ('SG','Economie-Droit','Responsabilité pénale',
+  'La responsabilité pénale d\'une personne morale (entreprise) peut être engagée :',
+  ['Jamais — seules les personnes physiques sont pénalement responsables','Uniquement pour les crimes','Pour des infractions commises pour son compte par ses organes ou représentants','Seulement si le dirigeant est condamné d\'abord'],
+  2,30,3,'juridique');
+
+// ── ÉCONOMIE : MARCHÉ, CROISSANCE, FINANCEMENT ──
+addQ('SG','Economie-Droit','Marché et prix',
+  'Le marché oligopolistique se caractérise par :',
+  ['Un seul vendeur face à de nombreux acheteurs','De nombreux vendeurs et de nombreux acheteurs','Peu de vendeurs et de nombreux acheteurs','Un seul acheteur face à de nombreux vendeurs'],
+  1,20,2,'connaissance');
+
+addQ('SG','Economie-Droit','Marché et prix',
+  'L\'élasticité-prix de la demande mesure :',
+  ['La variation du chiffre d\'affaires','La sensibilité de la quantité demandée à une variation du prix','Le rapport entre offre et demande','La variation du coût de production'],
+  1,25,3,'connaissance');
+
+addQ('SG','Economie-Droit','Croissance économique',
+  'Le PIB par habitant de Djibouti est d\'environ 3 500 USD (2024). Ce ratio mesure :',
+  ['La richesse totale du pays','Le niveau de vie moyen par personne','Les exportations par habitant','Les investissements étrangers'],
+  1,20,2,'connaissance');
+
+addQ('SG','Economie-Droit','Croissance économique',
+  'L\'investissement direct étranger (IDE) représente pour Djibouti :',
+  ['Une source de dette uniquement','Un apport de capitaux étrangers dans les infrastructures (port, zones franches, bases militaires)','Une aide publique au développement','Une exportation de capitaux djiboutiens'],
+  1,25,3,'connaissance');
+
+addQ('SG','Economie-Droit','Monnaie et financement',
+  'Le Franc Djiboutien (FDJ) est fixé par rapport au dollar américain depuis 1949. Ce régime s\'appelle :',
+  ['Taux de change flottant','Currency board (caisse d\'émission) — taux de change fixe à 177,72 FDJ pour 1 USD','Taux de change variable','Parité or'],
+  1,25,3,'connaissance');
+
+addQ('SG','Economie-Droit','Monnaie et financement',
+  'La Banque Centrale de Djibouti (BCD) a pour mission principale :',
+  ['Financer directement les entreprises','Assurer la stabilité monétaire et superviser les banques commerciales djiboutiennes','Collecter les impôts','Fixer les salaires'],
+  1,25,3,'connaissance');
+
+addQ('SG','Economie-Droit','Droit des contrats',
+  'La condition suspensive dans un contrat est :',
+  ['Un événement futur et certain qui éteint l\'obligation','Un événement futur et incertain dont dépend la naissance de l\'obligation','Une clause pénale automatique','Une garantie financière'],
+  1,30,3,'juridique');
+
+addQ('SG','Economie-Droit','Droit des sociétés',
+  'La transformation d\'une SARL en SA nécessite une décision :',
+  ['Du gérant seul','De l\'assemblée générale extraordinaire (AGE) à la majorité des 2/3','Des créanciers','De l\'inspection du travail'],
+  1,25,3,'juridique');
+
+// ══════════════════════════════════════════════════════════════════════════════
+// FIN DU PATCH SPRINT 4
+// Nouvelles questions :
+//   Maths S   : +25 → Total Maths S   : ~38 questions
+//   Maths ES  : +18 → Total Maths ES  : ~35 questions
+//   Maths L   : +12 → Total Maths L   : ~18 questions
+//   Maths SG  : +14 → Total Maths SG  : ~20 questions
+//   Éco-Droit : +24 → Total Éco-Droit : ~42 questions
+// Total cumulé : ~594+ questions dans l'application
+// ══════════════════════════════════════════════════════════════════════════════
+
+
 // ─── S — PHYSIQUE-CHIMIE ───
 addQ('S','Physique-Chimie','Mécanique','La deuxième loi de Newton s\'écrit :',['F = mv','E = mc²','F = ma','P = mv²'],2,20,2,'connaissance');
 addQ('S','Physique-Chimie','Mécanique','L\'unité du travail en physique est :',['Le Newton','Le Watt','Le Pascal','Le Joule'],3,20,2,'connaissance');
@@ -1219,15 +1757,693 @@ addQ('S','Physique-Chimie','Chimie','La formule de l\'eau est :',['CO₂','H₂O
 addQ('S','Physique-Chimie','Optique','La vitesse de la lumière dans le vide est approximativement :',['3×10⁶ m/s','3×10¹⁰ m/s','3×10⁸ m/s','3×10⁴ m/s'],2,20,2,'connaissance');
 addQ('S','Physique-Chimie','Optique','La loi de Snell-Descartes pour la réfraction est :',['n₁ cos θ₁ = n₂ cos θ₂','n₁/θ₁ = n₂/θ₂','sin θ₁ = sin θ₂','n₁ sin θ₁ = n₂ sin θ₂'],3,30,3,'connaissance');
 
+// ══════════════════════════════════════════════════════════════════════════════
+// PATCH SPRINT 3 — Bac Djibouti 2026
+// Sources annales : PC 2021, 2022, 2023, 2024 · SES 2016 · Programme CRIPEN
+// À insérer dans index_v17.html APRÈS la dernière ligne addQ('S','Physique-Chimie'…)
+// (après la ligne : addQ('S','Physique-Chimie','Optique','La loi de Snell-Descartes…)
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════
+// PHYSIQUE-CHIMIE SÉRIE S — 28 QUESTIONS
+// Annales Bac Djibouti 2021, 2022, 2023, 2024
+// Chapitres : Son · Chimie acide-base · Mécanique (projectile)
+//             Électricité (RL / RC) · Oscillateur · Spectroscopie
+// ══════════════════════════════════════
+
+// ── ACOUSTIQUE & SON (Bac 2021 : Le Saxophone) ──
+addQ('S','Physique-Chimie','Acoustique',
+  'Le saxophone est classé dans la famille des instruments de musique à :',
+  ['Cordes frottées','Percussion','Vent (aérophones)','Claviers'],
+  2,20,2,'connaissance');
+
+addQ('S','Physique-Chimie','Acoustique',
+  'Un son complexe se distingue d\'un son pur car il est composé de :',
+  ['Un signal sinusoïdal unique','Plusieurs fréquences (fondamentale + harmoniques)','Un signal de fréquence nulle','Un bruit sans période'],
+  1,25,3,'connaissance');
+
+addQ('S','Physique-Chimie','Acoustique',
+  'La relation entre fréquence f et période T d\'un son est :',
+  ['f = T','f = T²','f = 1/T','f = 2T'],
+  2,20,2,'connaissance');
+
+addQ('S','Physique-Chimie','Acoustique',
+  'Le niveau sonore L d\'un son est calculé par la formule L = 10 × log(I/I₀). Si I = 1,0×10⁻⁴ W/m² et I₀ = 10⁻¹² W/m², le niveau sonore est :',
+  ['40 dB','60 dB','80 dB','100 dB'],
+  2,45,4,'calcul_complexe');
+
+addQ('S','Physique-Chimie','Acoustique',
+  'Lorsque la distance entre une source sonore et un observateur triple, l\'intensité sonore est divisée par :',
+  ['3','6','9','27'],
+  2,30,3,'application');
+
+addQ('S','Physique-Chimie','Acoustique',
+  'La fréquence du 2ème harmonique d\'un son fondamental f₁ = 500 Hz vaut :',
+  ['250 Hz','500 Hz','1000 Hz','1500 Hz'],
+  2,25,3,'calcul_simple');
+
+// ── CHIMIE ACIDE-BASE (Bac 2021 : Acide formique / 2024 : Méthylamine) ──
+addQ('S','Physique-Chimie','Chimie acide-base',
+  'Selon Brønsted, un acide est une espèce capable de :',
+  ['Capter un proton H⁺','Libérer un électron','Capter un électron','Céder un proton H⁺'],
+  3,20,2,'connaissance');
+
+addQ('S','Physique-Chimie','Chimie acide-base',
+  'Le taux d\'avancement final τ d\'une réaction acide-base mesure :',
+  ['La vitesse de la réaction','La proportion de réactif transformé par rapport à la transformation totale possible','La concentration finale des produits','La valeur du pH final'],
+  1,25,3,'connaissance');
+
+addQ('S','Physique-Chimie','Chimie acide-base',
+  'Un acide est dit faible lorsque :',
+  ['Son pH est inférieur à 0','Sa réaction avec l\'eau est totale','Son taux d\'avancement τ < 1 (réaction partielle)','Il est insoluble dans l\'eau'],
+  2,25,3,'connaissance');
+
+addQ('S','Physique-Chimie','Chimie acide-base',
+  'L\'acide méthanoïque (HCOOH) a un pKa de 3,75. À pH = 5, l\'espèce prédominante est :',
+  ['HCOOH (acide)','HCOO⁻ (base conjuguée)','H₃O⁺','OH⁻'],
+  1,30,3,'application');
+
+addQ('S','Physique-Chimie','Chimie acide-base',
+  'La réaction de dosage d\'un acide par la soude NaOH est totale et rapide. Au point équivalent, les quantités de matière en mol de l\'acide (na) et de la base (nb) vérifient :',
+  ['na > nb','na < nb','na = nb','na = 2nb'],
+  2,25,3,'connaissance');
+
+addQ('S','Physique-Chimie','Chimie acide-base',
+  'La méthylamine CH₃NH₂ est une base faible de pKa = 10,6 (couple CH₃NH₃⁺/CH₃NH₂). À pH = 11,8, l\'espèce prédominante est :',
+  ['CH₃NH₃⁺ (acide conjugué)','CH₃NH₂ (base)','Un mélange 50/50','L\'eau'],
+  1,30,3,'application');
+
+addQ('S','Physique-Chimie','Chimie acide-base',
+  'La constante K de la réaction base-eau s\'exprime en fonction de Ke et Ka par la relation :',
+  ['K = Ka × Ke','K = Ka / Ke','K = Ke / Ka','K = 1 / (Ka + Ke)'],
+  2,30,3,'connaissance');
+
+// ── ESTÉRIFICATION (Bac 2021 : Méthanoate de propyle) ──
+addQ('S','Physique-Chimie','Chimie organique',
+  'La réaction d\'estérification entre l\'acide méthanoïque (HCOOH) et le propan-1-ol produit :',
+  ['Du méthanoate de propyle et de l\'eau','Du propanoate de méthyle et de l\'eau','De l\'éthanol et du CO₂','De l\'anhydride méthanoïque'],
+  0,25,3,'connaissance');
+
+addQ('S','Physique-Chimie','Chimie organique',
+  'La réaction d\'estérification est caractérisée par le fait qu\'elle est :',
+  ['Totale, rapide et irréversible','Partielle, lente et réversible (équilibre)','Totale, lente et irréversible','Partielle, rapide et exothermique'],
+  1,25,3,'connaissance');
+
+addQ('S','Physique-Chimie','Chimie organique',
+  'On fait réagir 0,1 mol d\'acide méthanoïque avec 0,2 mol de propan-1-ol. Le réactif en excès est :',
+  ['L\'acide méthanoïque','Le propan-1-ol — car n(alcool) = 0,2 mol > n(acide) = 0,1 mol','Les deux réactifs sont en quantités égales','Il n\'y a pas de réactif en excès'],
+  1,30,3,'application');
+
+// ── MÉCANIQUE — MOUVEMENT PARABOLIQUE (Bac 2021 panier NBA / 2022 coup franc / 2023 bouquet) ──
+addQ('S','Physique-Chimie','Mécanique',
+  'En l\'absence de frottements, un projectile lancé avec une vitesse initiale v₀ à l\'angle α subit uniquement la pesanteur. Son mouvement horizontal est donc :',
+  ['Uniformément accéléré','Décéléré puis accéléré','Uniforme (Vx = constante = v₀cosα)','Nul'],
+  2,25,3,'connaissance');
+
+addQ('S','Physique-Chimie','Mécanique',
+  'L\'équation de la trajectoire d\'un projectile (lancé depuis h, angle α, vitesse v₀) s\'écrit y(x) = :',
+  ['−½g(x/v₀cosα)² + x·tanα + h','−½g·x + x·tanα','g·x²/(v₀cosα) + h','v₀cosα·t + h'],
+  0,35,4,'connaissance');
+
+addQ('S','Physique-Chimie','Mécanique',
+  'La nature de la trajectoire parabolique d\'un projectile est une :',
+  ['Droite inclinée','Parabole (fonction polynôme du degré 2 en x)','Ellipse','Sinusoïde'],
+  1,20,2,'connaissance');
+
+addQ('S','Physique-Chimie','Mécanique',
+  'Un ballon est lancé depuis h = 2,2 m avec v₀ = 9,0 m/s à α = 50°. On cherche si le tir est à 3 points (distance ≥ 6,75 m). La composante horizontale Vx vaut (cos 50° ≈ 0,64) :',
+  ['9,0 m/s','6,9 m/s','5,8 m/s','4,2 m/s'],
+  2,35,4,'calcul_simple');
+
+addQ('S','Physique-Chimie','Énergie mécanique',
+  'La conservation de l\'énergie mécanique s\'applique lorsque :',
+  ['Il y a des frottements importants','Seul le poids effectue un travail (pas de frottements)','Le corps est à l\'arrêt','La vitesse est constante'],
+  1,25,3,'connaissance');
+
+addQ('S','Physique-Chimie','Énergie mécanique',
+  'Un ballon de masse m = 0,45 kg est lancé depuis h = 0 avec v₀ = 32 m/s. Son énergie cinétique initiale est (arrondi) :',
+  ['14,4 J','115 J','230 J','460 J'],
+  2,40,4,'calcul_simple');
+
+// ── ELECTRICITÉ — CIRCUIT RL & RC (Bac 2022 condensateur / 2024 dipôle RL) ──
+addQ('S','Physique-Chimie','Électricité',
+  'La constante de temps τ d\'un circuit RL vaut :',
+  ['τ = R/L','τ = L/R','τ = L × R','τ = 1/(L×R)'],
+  1,25,3,'connaissance');
+
+addQ('S','Physique-Chimie','Électricité',
+  'En régime permanent dans un circuit RL alimenté par une tension continue E (résistances R et r) :',
+  ['Le courant vaut I₀ = E × (R + r)','La bobine se comporte comme un interrupteur ouvert','La bobine se comporte comme un court-circuit : I₀ = E/(R+r)','Le courant est nul'],
+  2,25,3,'connaissance');
+
+addQ('S','Physique-Chimie','Électricité',
+  'Dans un circuit RC, la relation entre la tension Uc aux bornes du condensateur et sa charge q est :',
+  ['Uc = q/C','Uc = C/q','Uc = q × C²','Uc = C × R'],
+  0,20,2,'connaissance');
+
+addQ('S','Physique-Chimie','Électricité',
+  'L\'énergie maximale stockée par un condensateur de capacité C chargé sous tension U est :',
+  ['E = CU','E = ½CU²','E = CU²','E = ½C²U'],
+  1,25,3,'connaissance');
+
+// ── OSCILLATEUR MÉCANIQUE (Bac 2023) ──
+addQ('S','Physique-Chimie','Oscillateur',
+  'La période propre T₀ d\'un oscillateur masse-ressort (masse m, raideur k) vaut :',
+  ['T₀ = 2π√(k/m)','T₀ = 2π√(m/k)','T₀ = 2π × m × k','T₀ = k/(2πm)'],
+  1,25,3,'connaissance');
+
+addQ('S','Physique-Chimie','Oscillateur',
+  'Un oscillateur libre sans frottement présente des oscillations :',
+  ['Amorties — l\'amplitude décroît exponentiellement','Entretenues par une source extérieure','Non amorties — l\'amplitude reste constante','Qui s\'arrêtent immédiatement'],
+  2,20,2,'connaissance');
+
+// ── SPECTROSCOPIE IR & RMN (Bac 2024 : bouteille mystérieuse) ──
+addQ('S','Physique-Chimie','Spectroscopie',
+  'En spectroscopie IR, la bande d\'absorption large et forte autour de 2500–3200 cm⁻¹ est caractéristique de la liaison :',
+  ['C=O d\'un ester','C–H d\'un aldéhyde','O–H d\'un acide carboxylique (liaison H élargie)','N–H d\'une amine'],
+  2,25,3,'connaissance');
+
+addQ('S','Physique-Chimie','Spectroscopie',
+  'En RMN ¹H, le nombre de signaux observés correspond au nombre de :',
+  ['Carbones dans la molécule','Types de protons équivalents dans la molécule','Liaisons C–H uniquement','Atomes d\'oxygène'],
+  1,25,3,'connaissance');
+
+// ══════════════════════════════════════
+// SES — SÉRIE ES — 22 QUESTIONS
+// Sources : annale dissertation 2016 (croissance, PGF, R&D)
+//           programme CRIPEN Djibouti · EC1 · EC2 · Dissertation
+// Chapitres : Croissance · Marché et prix · Mondialisation
+//             Inégalités · Travail et emploi · Financement
+// ══════════════════════════════════════
+
+// ── CROISSANCE ÉCONOMIQUE & PGF ──
+addQ('ES','SES','Croissance économique',
+  'Le PIB (Produit Intérieur Brut) mesure :',
+  ['Le patrimoine total d\'un pays','La valeur de toutes les richesses produites sur le territoire pendant une période donnée','Le revenu des ménages uniquement','Les exportations d\'un pays'],
+  1,20,2,'connaissance');
+
+addQ('ES','SES','Croissance économique',
+  'La Productivité Globale des Facteurs (PGF) mesure la part de la croissance due à :',
+  ['L\'augmentation du stock de capital physique','L\'augmentation de la population active','L\'efficacité dans l\'utilisation des facteurs — progrès technique, organisation, innovation','La seule hausse des salaires'],
+  2,30,3,'connaissance');
+
+addQ('ES','SES','Croissance économique',
+  'D\'après les données OCDE (2024 Bac Djibouti), entre 1985 et 2011, la PGF contribue à la croissance française à hauteur de 0,9 point. Cela signifie que :',
+  ['Le progrès technique est la seule source de croissance en France','Le capital et le travail n\'ont aucun rôle','Le progrès technique explique environ la moitié de la croissance française de 1,9% sur cette période','La France a une croissance nulle sans capital'],
+  2,30,3,'application');
+
+addQ('ES','SES','Croissance économique',
+  'La FBCF (Formation Brute de Capital Fixe) est une mesure de :',
+  ['La production de biens de consommation','L\'investissement en équipements, bâtiments et logiciels au niveau national','L\'épargne des ménages','Les dépenses publiques en services'],
+  1,20,2,'connaissance');
+
+addQ('ES','SES','Croissance économique',
+  'Entre 2001 et 2011, la Corée du Sud a une croissance de la DIRD (R&D) de 8,49% par an et une croissance du PIB de 4,12% par an. Cela illustre le fait que :',
+  ['La R&D n\'a aucun effet sur la croissance','L\'investissement en R&D est corrélé positivement à la croissance économique','La Corée du Sud est moins développée que la France','Le PIB dépend uniquement de la population active'],
+  1,30,3,'application');
+
+addQ('ES','SES','Croissance économique',
+  'En France entre 1975 et 2012, le PIB en volume a augmenté d\'environ 115% alors que la population active n\'a augmenté que d\'environ 30%. Cela implique que :',
+  ['La croissance est uniquement due à l\'augmentation de la main d\'œuvre','Le capital physique a diminué','Des gains de productivité importants ont permis de produire plus avec proportionnellement moins de travail','La France a connu une récession prolongée'],
+  2,30,3,'application');
+
+// ── MARCHÉ, PRIX ET MÉCANISMES DE COORDINATION ──
+addQ('ES','SES','Marché et prix',
+  'Sur un marché concurrentiel, l\'équilibre est atteint lorsque :',
+  ['L\'offre est supérieure à la demande','L\'offre est inférieure à la demande','L\'offre et la demande se compensent, fixant un prix d\'équilibre','L\'État fixe le prix'],
+  2,20,2,'connaissance');
+
+addQ('ES','SES','Marché et prix',
+  'Une externalité négative est une situation où :',
+  ['Un agent crée des coûts pour d\'autres agents sans les compenser','Un agent bénéficie gratuitement d\'un bien public','L\'État subventionne une entreprise','La demande d\'un bien augmente avec son prix'],
+  0,25,3,'connaissance');
+
+addQ('ES','SES','Marché et prix',
+  'Un bien public se caractérise par sa non-rivalité et sa non-exclusion. L\'exemple le plus courant est :',
+  ['Un repas dans un restaurant','La défense nationale ou l\'éclairage public','L\'électricité vendue par EDF','Un vêtement de luxe'],
+  1,20,2,'connaissance');
+
+// ── MONDIALISATION & COMMERCE INTERNATIONAL ──
+addQ('ES','SES','Mondialisation',
+  'La valeur totale des exportations mondiales est passée de 59 milliards USD en 1948 à 17 930 milliards en 2012. Cela illustre :',
+  ['Une stagnation du commerce mondial','Une forte croissance du commerce international liée à la mondialisation','Une régionalisation complète des échanges','La fin du libre-échange'],
+  1,25,3,'application');
+
+addQ('ES','SES','Mondialisation',
+  'La part de l\'Asie dans les exportations mondiales est passée de 14% en 1948 à 31,5% en 2012. Cela reflète :',
+  ['Le déclin économique asiatique','La montée en puissance des économies asiatiques (Chine, Corée du Sud, Japon) dans le commerce mondial','La domination persistante de l\'Europe','Une stagnation de la mondialisation'],
+  1,30,3,'application');
+
+addQ('ES','SES','Mondialisation',
+  'L\'avantage comparatif (Ricardo) explique que chaque pays a intérêt à se spécialiser dans :',
+  ['La production pour laquelle il a un coût d\'opportunité le plus faible (avantage relatif)','La production où il est le plus fort en termes absolus uniquement','Les secteurs protégés par des droits de douane','Les biens de luxe uniquement'],
+  0,30,3,'connaissance');
+
+// ── INÉGALITÉS & STRATIFICATION SOCIALE ──
+addQ('ES','SES','Inégalités sociales',
+  'D\'après les données (SES 2016), l\'espérance de vie à 60 ans des cadres hommes entre 2000 et 2008 est de 24 ans, contre 19,6 ans pour les ouvriers. Cet écart illustre :',
+  ['L\'absence d\'inégalités sociales face à la santé','Des inégalités sociales de santé liées aux conditions de travail, au revenu et au mode de vie','Que les ouvriers vivent plus longtemps','Un biais statistique sans signification'],
+  1,30,3,'application');
+
+addQ('ES','SES','Inégalités sociales',
+  'La notion de "cumul des inégalités" (Bihr & Pfefferkorn) désigne le fait que :',
+  ['Les inégalités économiques et sociales tendent à se renforcer mutuellement','Une inégalité dans un domaine n\'affecte pas les autres domaines','Les inégalités diminuent naturellement avec le temps','Le capital humain élimine toutes les inégalités'],
+  0,30,3,'connaissance');
+
+addQ('ES','SES','Inégalités sociales',
+  'Trois ans après la sortie du système éducatif (Céreq 2014), le taux de chômage des non-diplômés (génération 2010) est de 48%, contre 9% pour les diplômés Grandes Écoles. Cela montre que :',
+  ['Le diplôme n\'a aucun effet sur l\'emploi','Le niveau de diplôme est fortement corrélé au risque de chômage','Les non-diplômés préfèrent ne pas travailler','Les Grandes Écoles surprotègent leurs étudiants'],
+  1,25,3,'application');
+
+// ── TRAVAIL, EMPLOI ET CHÔMAGE ──
+addQ('ES','SES','Travail et emploi',
+  'Le chômage frictionnel désigne :',
+  ['Le chômage lié à une récession économique','La période de transition entre deux emplois (délai de recherche)','Le chômage causé par des mutations technologiques','Le chômage saisonnier'],
+  1,25,3,'connaissance');
+
+addQ('ES','SES','Travail et emploi',
+  'Le travail contribue à l\'intégration sociale notamment car il :',
+  ['Garantit uniquement un revenu financier','Procure un statut social, un réseau relationnel et un sentiment d\'utilité','N\'a pas d\'effet sur le lien social','Est source de stress et d\'isolement uniquement'],
+  1,25,3,'connaissance');
+
+addQ('ES','SES','Travail et emploi',
+  'L\'IDH (Indice de Développement Humain) complète le PIB car il intègre :',
+  ['Uniquement le revenu par habitant','Uniquement le taux d\'alphabétisation','L\'espérance de vie, l\'éducation et le revenu — une vision multidimensionnelle du développement','Le taux de chômage et l\'inflation'],
+  2,25,3,'connaissance');
+
+// ── FINANCEMENT DE L'ÉCONOMIE ──
+addQ('ES','SES','Financement de l\'économie',
+  'Le financement indirect (intermédiation bancaire) correspond à :',
+  ['L\'émission d\'actions en bourse par les entreprises','La banque qui collecte l\'épargne et accorde des crédits en jouant le rôle d\'intermédiaire','Les obligations d\'État émises directement sur les marchés','Le financement participatif (crowdfunding)'],
+  1,25,3,'connaissance');
+
+addQ('ES','SES','Financement de l\'économie',
+  'La politique monétaire expansionniste vise à :',
+  ['Réduire la masse monétaire pour lutter contre l\'inflation','Augmenter les impôts','Stimuler l\'économie en baissant les taux d\'intérêt et en facilitant le crédit','Supprimer les aides sociales'],
+  2,25,3,'connaissance');
+
+addQ('ES','SES','Financement de l\'économie',
+  'La dette publique désigne :',
+  ['Le déficit commercial d\'un pays','L\'ensemble des emprunts accumulés par les administrations publiques','Les dettes des ménages','Les dettes des entreprises privées'],
+  1,20,2,'connaissance');
+
+addQ('ES','SES','Croissance économique',
+  'Le progrès technique est dit "incorporé" lorsqu\'il est :',
+  ['Développé dans les universités uniquement','Inclus dans les équipements et machines eux-mêmes (obsolescence des anciens capitaux)','Financé uniquement par l\'État','Diffusé par les medias'],
+  1,25,3,'connaissance');
+
+// ══════════════════════════════════════
+// HISTOIRE-GÉOGRAPHIE — SÉRIES ES & L — 14 QUESTIONS
+// Programme CRIPEN Djibouti : Guerre froide · Décolonisation
+// Mondialisation · Djibouti dans le monde · Géographie
+// ══════════════════════════════════════
+
+// ── GUERRE FROIDE & RELATIONS INTERNATIONALES ──
+addQ('ES','Histoire-Géographie','Guerre froide',
+  'Le Plan Marshall (1947) était un programme américain d\'aide économique destiné à :',
+  ['Envahir l\'URSS militairement','Reconstruire l\'Europe occidentale et contenir l\'expansion du communisme','Créer l\'OTAN','Décoloniser l\'Afrique'],
+  1,25,3,'connaissance');
+
+addQ('ES','Histoire-Géographie','Guerre froide',
+  'La doctrine Truman (1947) engage les États-Unis à soutenir :',
+  ['Tous les pays en développement','Les pays communistes en difficulté','Tout pays menacé par le totalitarisme communiste','L\'ONU dans ses missions de paix'],
+  2,25,3,'connaissance');
+
+addQ('ES','Histoire-Géographie','Guerre froide',
+  'La "détente" dans les relations internationales des années 1970 se traduit notamment par :',
+  ['Une intensification de la course aux armements','La signature des accords SALT limitant les arsenaux nucléaires américano-soviétiques','L\'entrée de l\'URSS dans l\'OTAN','La réunification de l\'Allemagne'],
+  1,25,3,'connaissance');
+
+// ── DÉCOLONISATION & MONDE CONTEMPORAIN ──
+addQ('ES','Histoire-Géographie','Décolonisation',
+  'Djibouti accède à l\'indépendance le :',
+  ['1er janvier 1960','4 juin 1977','27 juin 1977','15 août 1960'],
+  2,20,2,'connaissance');
+
+addQ('ES','Histoire-Géographie','Décolonisation',
+  'Les Accords d\'Évian (1962) mettent fin à la guerre de :',
+  ['Corée','Vietnam','Indochine','Algérie'],
+  3,20,2,'connaissance');
+
+// ── MONDIALISATION ET GÉOGRAPHIE DU MONDE CONTEMPORAIN ──
+addQ('ES','Histoire-Géographie','Mondialisation',
+  'Le Bab-el-Mandeb est un détroit stratégique car il contrôle :',
+  ['L\'accès à la Méditerranée depuis le Pacifique','Le passage entre l\'océan Indien et la mer Rouge, axe majeur du commerce mondial','La frontière entre Djibouti et la Somalie','L\'accès au lac Assal'],
+  1,25,3,'connaissance');
+
+addQ('ES','Histoire-Géographie','Mondialisation',
+  'Le port de Doraleh est crucial pour l\'économie djiboutienne car :',
+  ['C\'est un port exclusivement militaire','Djibouti n\'a pas de ressources naturelles et tire 70% de ses revenus de son port et de ses services logistiques','Il est géré entièrement par la Chine','Il produit du pétrole brut'],
+  1,30,3,'connaissance');
+
+addQ('ES','Histoire-Géographie','Mondialisation',
+  'La Zone de Libre-Échange Continentale Africaine (ZLECAf) lancée en 2019 a pour objectif de :',
+  ['Créer une monnaie unique africaine','Intégrer les marchés africains pour stimuler le commerce intra-africain et réduire la dépendance aux importations','Interdire les échanges avec l\'Asie','Fusionner tous les États africains en un seul'],
+  1,25,3,'connaissance');
+
+// ── Même bloc pour Série L ──
+addQ('L','Histoire-Géographie','Guerre froide',
+  'Le Plan Marshall (1947) était un programme américain d\'aide économique destiné à :',
+  ['Envahir l\'URSS militairement','Reconstruire l\'Europe occidentale et contenir l\'expansion du communisme','Créer l\'OTAN','Décoloniser l\'Afrique'],
+  1,25,3,'connaissance');
+
+addQ('L','Histoire-Géographie','Décolonisation',
+  'Djibouti accède à l\'indépendance le :',
+  ['1er janvier 1960','4 juin 1977','27 juin 1977','15 août 1960'],
+  2,20,2,'connaissance');
+
+addQ('L','Histoire-Géographie','Mondialisation',
+  'Le Bab-el-Mandeb est un détroit stratégique car il contrôle :',
+  ['L\'accès à la Méditerranée depuis le Pacifique','Le passage entre l\'océan Indien et la mer Rouge, axe majeur du commerce mondial','La frontière entre Djibouti et la Somalie','L\'accès au lac Assal'],
+  1,25,3,'connaissance');
+
+addQ('L','Histoire-Géographie','Mondialisation',
+  'La "mondialisation heureuse" désignée par certains économistes libéraux s\'oppose à la vision de :',
+  ['Ricardo sur les avantages comparatifs','Altermondialistes qui soulignent les inégalités croissantes et destructions environnementales liées à la mondialisation','Keynes sur l\'interventionnisme','Adam Smith sur la main invisible'],
+  1,30,3,'connaissance');
+
+addQ('L','Histoire-Géographie','Géographie régionale',
+  'La Corne de l\'Afrique est une région caractérisée par :',
+  ['Une forte stabilité politique et des ressources pétrolières abondantes','Une position géostratégique majeure (accès à la mer Rouge) mais des tensions politiques récurrentes (Somalie, Éthiopie-Érythrée)','Un haut niveau de développement économique','Une absence de conflits depuis 1990'],
+  1,25,3,'connaissance');
+
+addQ('L','Histoire-Géographie','Géographie régionale',
+  'L\'Éthiopie est un pays enclavé depuis 1993 (indépendance de l\'Érythrée). Cela explique pourquoi :',
+  ['L\'Éthiopie a perdu tout accès commercial','85% du commerce éthiopien transite par le port de Djibouti, renforçant l\'interdépendance économique des deux pays','L\'Éthiopie a construit son propre port intérieur','Djibouti et l\'Éthiopie sont en conflit'],
+  1,30,3,'connaissance');
+
+// ══════════════════════════════════════════════════════════════════════════════
+// FIN DU PATCH SPRINT 3
+// Nouvelles questions :
+//   PC S : +28  → Total PC S : ~38 questions
+//   SES ES : +22 → Total SES ES : ~22 questions (matière renforcée)
+//   HG ES : +8   → Total HG ES : ~16 questions
+//   HG L : +6    → Total HG L : ~12 questions
+// ══════════════════════════════════════════════════════════════════════════════
+
+
 // ─── S — SVT ───
-addQ('S','SVT','Génétique','L\'ADN est composé de :',['Nucléotides (bases A, T, G, C)','Acides aminés','Lipides et glucides','Protéines seules'],0,20,2,'connaissance');
-addQ('S','SVT','Génétique','La mitose produit :',['4 cellules haploïdes','2 cellules filles génétiquement identiques à la cellule mère','Des gamètes','Des cellules avec la moitié des chromosomes'],1,30,2,'connaissance');
-addQ('S','SVT','Génétique','Le caryotype humain normal comporte :',['23 chromosomes','48 chromosomes','46 chromosomes','22 chromosomes'],2,20,2,'connaissance');
-addQ('S','SVT','Génétique','La méiose se déroule lors de :',['La division cellulaire somatique','La réplication de l\'ADN','La traduction des ARN','La formation des gamètes'],3,30,2,'connaissance');
-addQ('S','SVT','Immunologie','Les anticorps sont produits par :',['Les lymphocytes B','Les érythrocytes','Les neutrophiles','Les plaquettes'],0,20,2,'connaissance');
-addQ('S','SVT','Immunologie','La vaccination repose sur :',['L\'injection d\'antibiotiques','La mémoire immunitaire (lymphocytes mémoires)','L\'élimination des bactéries existantes','L\'augmentation des globules rouges'],1,30,2,'connaissance');
-addQ('S','SVT','Géologie','La tectonique des plaques explique :',['La formation des nuages','L\'évolution des espèces','Les séismes, volcans et la dérive des continents','La composition de l\'atmosphère'],2,20,2,'connaissance');
-addQ('S','SVT','Évolution','La sélection naturelle favorise :',['Les individus les plus beaux','Les individus les plus grands','Les individus les plus âgés','Les individus les mieux adaptés à leur environnement'],3,20,2,'connaissance');
+// ─── S — SVT (annales-style Bac Djibouti 2016-2025) ───
+// GÉNÉTIQUE & MÉIOSE
+addQ('S','SVT','Génétique & Méiose','L\'ADN est composé de :',['Nucléotides (bases A, T, G, C)','Acides aminés','Lipides et glucides','Protéines seules'],0,20,2,'connaissance');
+addQ('S','SVT','Génétique & Méiose','La méiose produit :',['2 cellules filles diploïdes identiques','4 cellules filles haploïdes génétiquement différentes','Des cellules somatiques','Des cellules identiques à la cellule mère'],1,30,2,'application');
+addQ('S','SVT','Génétique & Méiose','Le caryotype humain normal comporte :',['23 chromosomes','48 chromosomes','46 chromosomes (23 paires)','22 chromosomes'],2,20,2,'connaissance');
+addQ('S','SVT','Génétique & Méiose','Lors de la 1ère division de la méiose, il y a séparation des :',['Chromatides sœurs','Chromosomes homologues','Centromères','Noyaux fils'],1,30,3,'application');
+addQ('S','SVT','Génétique & Méiose','Le brassage interchromosomique lors de la méiose résulte de :',['La réplication de l\'ADN','La répartition aléatoire des chromosomes homologues aux pôles','La synthèse des protéines','La fusion des noyaux'],1,30,3,'application');
+addQ('S','SVT','Génétique & Méiose','Deux gènes sont dits "en liaison" (liés) lorsqu\'ils se trouvent :',['Sur des chromosomes différents','Dans le cytoplasme','Sur les chromosomes sexuels uniquement (gonosomes)','Sur le même chromosome (non séparés lors de la méiose sans crossing-over)'],3,25,3,'application');
+addQ('S','SVT','Génétique & Méiose','Lors d\'un test-cross, un individu hétérozygote est croisé avec :',['Un autre hétérozygote','Un individu homozygote dominant','Un individu homozygote récessif','Un individu triploïde'],2,25,3,'application');
+// IMMUNOLOGIE (Bac 2016, 2019, 2023)
+addQ('S','SVT','Immunologie','Les 4 symptômes de la réaction inflammatoire aiguë sont :',['Fièvre, toux, fatigue, douleur','Rougeur, chaleur, douleur, gonflement','Pâleur, froid, anesthésie, gonflement','Fièvre, rougeur, toux, œdème'],1,30,3,'connaissance');
+addQ('S','SVT','Immunologie','Les anticorps sont des molécules produites par :',['Les lymphocytes T cytotoxiques','Les phagocytes','Les lymphocytes B différenciés en plasmocytes','Les cellules NK'],2,25,2,'connaissance');
+addQ('S','SVT','Immunologie','La réponse immunitaire adaptative est dite "spécifique" car :',['Elle détruit tous les agents pathogènes sans distinction','Elle cible un antigène précis grâce à des récepteurs complémentaires','Elle est identique pour tous les individus','Elle agit en quelques secondes'],1,30,3,'application');
+addQ('S','SVT','Immunologie','Les cellules présentatrices d\'antigènes (CPA) présentent les peptides antigéniques aux :',['Érythrocytes','Lymphocytes T auxiliaires (CD4)','Plaquettes sanguines','Fibroblastes'],1,25,3,'application');
+addQ('S','SVT','Immunologie','La mémoire immunitaire garantit que lors d\'un 2ème contact avec un antigène :',['La réponse est plus lente et plus faible','La réponse est plus rapide, plus intense et plus durable','L\'organisme ne réagit plus','Les anticorps disparaissent'],1,30,3,'application');
+// GÉOLOGIE & ENVIRONNEMENT (Bac 2016 Lac Assal, 2019, 2023)
+addQ('S','SVT','Géologie & Environnement','Les roches évaporites du lac Assal se forment par :',['Refroidissement du magma','Métamorphisme','Évaporation de l\'eau et précipitation des sels dissous','Sédimentation marine profonde'],2,30,3,'application');
+addQ('S','SVT','Géologie & Environnement','La roche évaporite formée en premier lors de l\'évaporation de l\'eau de mer est :',['L\'halite (NaCl)','Le sel de K et Mg','Le basalte','Le gypse (CaSO₄·2H₂O)'],3,30,3,'application');
+addQ('S','SVT','Géologie & Environnement','Le CO₂ atmosphérique a augmenté de 280 ppm (1750) à environ 379 ppm (2000), ce qui représente une hausse de :',['10 %','15 %','35 %','50 %'],2,25,3,'application');
+addQ('S','SVT','Géologie & Environnement','Le pouvoir de réchauffement global (PRG) des halocarbures sur 100 ans est :',['Inférieur à celui du CO₂','Égal à celui du CO₂','6 500 fois supérieur à celui du CO₂','Identique au méthane'],2,30,3,'application');
+// ÉVOLUTION & BIODIVERSITÉ (Bac 2017, 2025)
+addQ('S','SVT','Évolution & Biodiversité','Deux espèces provenant d\'une espèce ancestrale unique sont dites :',['Analogues','Homologues','Issues de spéciation','Hybrides stériles'],2,25,3,'connaissance');
+addQ('S','SVT','Évolution & Biodiversité','Le syndrome du mâle XX (De La Chapelle) résulte de :',['Une mutation ponctuelle du gène SRY','Une translocation du gène SRY du chromosome Y vers le chromosome X','Une délétion du chromosome Y entier','Un excès de chromosomes X'],1,30,3,'application');
+addQ('S','SVT','Évolution & Biodiversité','La colchicine provoque une polyploïdisation en :',['Accélérant la méiose','Bloquant la mise en place du fuseau mitotique → doublement chromosomique','Inhibant la réplication de l\'ADN','Favorisant le crossing-over'],1,30,3,'application');
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PATCH SVT — SPRINT 2 · Bac Djibouti 2026
+// 30 nouvelles questions · Série S · SVT
+// Sources annales officielles : 2016, 2017, 2019, 2020, 2023, 2024, 2025
+// À insérer dans index_v16.html APRÈS la ligne :
+//   addQ('S','SVT','Évolution & Biodiversité','La colchicine ...
+// (bloc SVT existant se termine à la ligne ~1251)
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ──────────────────────────────────────────
+// BLOC 1 — GÉNÉTIQUE & MÉIOSE (approfondi)
+// Sources : Bac 2025 (méiose/diversité), 2023 (chat écaille), 2019 (drosophile)
+// ──────────────────────────────────────────
+
+addQ('S','SVT','Génétique & Méiose',
+  'Le brassage intrachromosomique lors de la méiose est dû au :',
+  ['Crossing-over (enjambement) entre chromatides non-sœurs en prophase I',
+   'Doublement de la quantité d\'ADN en interphase',
+   'Mouvement des chromosomes vers les pôles en anaphase II',
+   'Alignement des chromosomes en métaphase I'],
+  0,30,3,'connaissance');
+
+addQ('S','SVT','Génétique & Méiose',
+  'Pour expliquer la diversité génétique des gamètes, la méiose utilise deux mécanismes principaux. Lesquels ?',
+  ['La réplication et la mitose',
+   'La sélection naturelle et la dérive génétique',
+   'Le brassage intrachromosomique (crossing-over) et le brassage interchromosomique (ségrégation indépendante)',
+   'La transcription et la traduction'],
+  2,30,3,'connaissance');
+
+addQ('S','SVT','Génétique & Méiose',
+  'Un chat mâle "écaille de tortue" (phénotype normalement femelle) s\'explique par :',
+  ['Une mutation du gène de pigmentation sur l\'autosome 7',
+   'La présence de deux allèles co-dominants X^N et X^R suite à une méiose anormale chez la mère',
+   'Un régime alimentaire particulier',
+   'Un phénomène d\'épigénétique uniquement'],
+  1,35,3,'application');
+
+addQ('S','SVT','Génétique & Méiose',
+  'Lors du 2ème croisement chez la drosophile (test-cross), les recombinés représentent ~9% des descendants. Cela signifie que les deux gènes sont :',
+  ['Indépendants (sur deux chromosomes différents)',
+   'Liés (sur le même chromosome) avec un faible taux de recombinaison',
+   'Tous les deux récessifs',
+   'Sur les chromosomes sexuels'],
+  1,35,4,'application');
+
+addQ('S','SVT','Génétique & Méiose',
+  'Le syndrome du mâle XX (De La Chapelle) est caractérisé par un caryotype :',
+  ['46,XY (normal masculin)',
+   '47,XXY (Klinefelter)',
+   '46,XX avec le gène SRY transféré sur un chromosome X',
+   '45,X (Turner)'],
+  2,30,3,'application');
+
+addQ('S','SVT','Génétique & Méiose',
+  'La stérilité des hommes atteints du syndrome De La Chapelle s\'explique par :',
+  ['L\'absence de testicules',
+   'Un excès de testostérone',
+   'La présence du gène SRY sur le chromosome X qui inactive la production d\'ovules',
+   'L\'absence de la région AZF (gènes de production des cellules germinales) normalement portée par le chromosome Y'],
+  3,35,4,'application');
+
+// ──────────────────────────────────────────
+// BLOC 2 — IMMUNOLOGIE (approfondi)
+// Sources : Bac 2016, 2017 (2nd groupe), 2019, 2020
+// ──────────────────────────────────────────
+
+addQ('S','SVT','Immunologie',
+  'La réponse immunitaire à médiation humorale fait intervenir les :',
+  ['Lymphocytes T cytotoxiques qui lysent les cellules infectées',
+   'Lymphocytes B qui se différencient en plasmocytes producteurs d\'anticorps',
+   'Macrophages qui détruisent les bactéries par phagocytose',
+   'Cellules NK (Natural Killers) uniquement'],
+  1,25,3,'connaissance');
+
+addQ('S','SVT','Immunologie',
+  'Dans l\'expérience historique d\'immunisation (Bac 2020), le lapin C (ayant reçu le sérum de A) survit après injection de toxine tétanique. Cela démontre :',
+  ['Que le lapin C avait une immunité naturelle préalable',
+   'Que les anticorps anti-tétanos du sérum A confèrent une immunité passive transférable',
+   'Que la toxine tétanique est inoffensive pour les lapins',
+   'Que la phagocytose seule suffit à neutraliser la toxine'],
+  1,35,4,'application');
+
+addQ('S','SVT','Immunologie',
+  'Le lapin D du même protocole expérimental meurt malgré l\'injection du sérum A, car :',
+  ['Le sérum A ne contient que des anticorps anti-tétanos, pas anti-diphtérie',
+   'Le sérum A est trop concentré',
+   'Le lapin D est allergique au sérum',
+   'La diphtérie est une maladie virale insensible aux anticorps'],
+  0,35,4,'application');
+
+addQ('S','SVT','Immunologie',
+  'La sélection clonale lors de la réponse immunitaire désigne :',
+  ['La destruction de tous les lymphocytes non spécifiques',
+   'La production aléatoire d\'anticorps',
+   'L\'activation et la multiplication d\'un seul clone de lymphocyte possédant le récepteur complémentaire à l\'antigène',
+   'La fusion des lymphocytes B et T'],
+  2,30,3,'connaissance');
+
+addQ('S','SVT','Immunologie',
+  'L\'interleukine-2 (IL-2) est sécrétée par les lymphocytes T4 auxiliaires pour :',
+  ['Détruire directement les cellules infectées',
+   'Produire des anticorps',
+   'Activer et faire proliférer les lymphocytes T8 (cytotoxiques) spécifiques de l\'antigène',
+   'Neutraliser les toxines bactériennes'],
+  2,30,3,'connaissance');
+
+addQ('S','SVT','Immunologie',
+  'Les lymphocytes T cytotoxiques (LTc) détruisent les cellules infectées par :',
+  ['Phagocytose de la cellule entière',
+   'Sécrétion d\'anticorps spécifiques',
+   'Sécrétion de perforines qui créent des pores dans la membrane de la cellule cible → lyse',
+   'Neutralisation des récepteurs membranaires de la cellule infectée'],
+  2,30,3,'connaissance');
+
+addQ('S','SVT','Immunologie',
+  'Les lymphocytes mémoires garantissent que lors d\'un 2ème contact avec le même antigène :',
+  ['L\'organisme ne réagit plus (tolérance)',
+   'La réponse est plus rapide et plus intense grâce aux cellules déjà présentes en grande quantité',
+   'Des anticorps différents sont produits',
+   'La réponse innée est désactivée'],
+  1,25,3,'connaissance');
+
+// ──────────────────────────────────────────
+// BLOC 3 — CORPS HUMAIN : REPRODUCTION & HORMONES
+// Sources : Bac 2017 (cycles ovariens), 2024 (expérience Jost)
+// ──────────────────────────────────────────
+
+addQ('S','SVT','Reproduction & Hormones',
+  'L\'expérience de Jost montre que, chez le fœtus femelle de lapin, la greffe d\'un testicule provoque :',
+  ['Le maintien des canaux de Müller et la régression des canaux de Wolff',
+   'La régression des canaux de Müller et le développement des canaux de Wolff → masculinisation',
+   'Aucune modification des voies génitales',
+   'Le développement simultané des deux types de canaux'],
+  1,35,4,'application');
+
+addQ('S','SVT','Reproduction & Hormones',
+  'L\'implantation d\'un cristal de propionate de testostérone chez un fœtus femelle de lapin entraîne :',
+  ['Le développement des canaux de Müller uniquement',
+   'La régression des deux types de canaux',
+   'Le développement des canaux de Wolff du côté de l\'implant (action locale de la testostérone)',
+   'La transformation des ovaires en testicules'],
+  2,35,4,'application');
+
+addQ('S','SVT','Reproduction & Hormones',
+  'Les testicules permettent la masculinisation des voies génitales par voie :',
+  ['Génétique uniquement (chromosome Y)',
+   'Hormonale, en sécrétant testostérone ET hormone anti-müllérienne (HAM)',
+   'Nerveuse via le système sympathique',
+   'Hormonale uniquement par la testostérone'],
+  1,30,3,'application');
+
+addQ('S','SVT','Reproduction & Hormones',
+  'Le complexe hypothalamo-hypophysaire contrôle les ovaires via :',
+  ['Les œstrogènes et la progestérone',
+   'L\'hormone HCG',
+   'Les hormones FSH (folliculo-stimulante) et LH (lutéinisante)',
+   'La GnRH seule, sans relais hypophysaire'],
+  2,25,3,'connaissance');
+
+addQ('S','SVT','Reproduction & Hormones',
+  'L\'hormone GnRH est sécrétée par :',
+  ['L\'hypophyse → stimule les ovaires directement',
+   'L\'hypothalamus → stimule l\'hypophyse à produire FSH et LH',
+   'Les ovaires → rétrocontrôle positif sur l\'utérus',
+   'Le corps jaune → maintien de la grossesse'],
+  1,25,3,'connaissance');
+
+// ──────────────────────────────────────────
+// BLOC 4 — GÉOLOGIE, ENVIRONNEMENT & PLANÈTE TERRE
+// Sources : Bac 2019 (réchauffement, CFC), 2020 (nappes Djibouti), 2023 (érosion), 2025 (paléoclimat)
+// ──────────────────────────────────────────
+
+addQ('S','SVT','Géologie & Environnement',
+  'D\'après les données isotopiques de la glace de Vostok (Antarctique), quand le δ¹⁸O de la glace est ÉLEVÉ, cela indique :',
+  ['Une période froide (moins de précipitations riches en O¹⁸)',
+   'Une période chaude (davantage d\'eau O¹⁸ incorporée dans les glaces)',
+   'Une période de sécheresse sans lien avec la température',
+   'Une augmentation du CO₂ atmosphérique'],
+  1,35,4,'application');
+
+addQ('S','SVT','Géologie & Environnement',
+  'En République de Djibouti, la surexploitation des nappes souterraines entraîne une salinisation car :',
+  ['Les forages font remonter le sel de surface',
+   'Le pompage excessif abaisse le niveau piézométrique → intrusion d\'eau salée marine dans l\'aquifère basaltique',
+   'L\'évaporation concentre les sels uniquement en surface',
+   'Les bactéries marines colonisent les forages'],
+  1,35,4,'application');
+
+addQ('S','SVT','Géologie & Environnement',
+  'L\'excès de nitrates dans l\'eau potable est dangereux car il peut provoquer chez les nourrissons :',
+  ['Des calculs rénaux',
+   'Des maladies de la peau',
+   'La méthémoglobinémie — réduction du transport d\'oxygène par le sang → risque d\'asphyxie',
+   'Des perturbations hormonales'],
+  2,30,3,'connaissance');
+
+addQ('S','SVT','Géologie & Environnement',
+  'Le pouvoir de réchauffement global (PRG) des halocarbures (CFC, HCFC…) est de 6 500 fois celui du CO₂ sur 100 ans, et leur durée de séjour dans l\'atmosphère est de :',
+  ['12 ans (comme le méthane)',
+   '100 ans (comme le CO₂)',
+   'Environ 1 000 ans',
+   'Jusqu\'à 50 000 ans — d\'où leur impact climatique extrêmement prolongé'],
+  3,30,3,'connaissance');
+
+addQ('S','SVT','Géologie & Environnement',
+  'L\'érosion mécanique des massifs montagneux se traduit notamment par :',
+  ['La formation de diaclases par expansion thermique et gel-dégel, puis transport de blocs par les glaciers (moraines)',
+   'La dissolution des roches par l\'acide carbonique uniquement',
+   'L\'accumulation de sédiments sans transport',
+   'La seule action chimique des pluies acides'],
+  0,30,3,'connaissance');
+
+addQ('S','SVT','Géologie & Environnement',
+  'La bactérie Bradyrhizobium japonicum est bénéfique pour la culture du soja car elle :',
+  ['Détruit les parasites du sol',
+   'Produit des pesticides naturels',
+   'Fixe l\'azote atmosphérique (N₂) et le convertit en NH₄⁺ utilisable par la plante → augmentation des protéines et du rendement',
+   'Réduit l\'acidité du sol uniquement'],
+  2,30,3,'application');
+
+addQ('S','SVT','Géologie & Environnement',
+  'D\'après les données INRA (Bac 2024), l\'ajout de Bradyrhizobium japonicum dans les sols français fait passer le rendement du soja de 29,4 à 47,4 quintaux/hectare, soit une augmentation de :',
+  ['Environ 10 %','Environ 25 %','Environ 38 %','Environ 61 %'],
+  3,35,4,'calcul_simple');
+
+// ──────────────────────────────────────────
+// BLOC 5 — ÉVOLUTION & BIODIVERSITÉ (approfondi)
+// Sources : Bac 2017 (Amphilophus), 2023 (chat), 2025 (De La Chapelle)
+// ──────────────────────────────────────────
+
+addQ('S','SVT','Évolution & Biodiversité',
+  'Les deux espèces d\'Amphilophus du lac Apoyo (Nicaragua) sont issues d\'une espèce ancestrale unique. La preuve génétique est fournie par :',
+  ['Leur différence de couleur',
+   'L\'arbre phylogénétique basé sur l\'analyse génétique qui montre leur ancêtre commun le plus récent dans le lac Apoyo',
+   'Leur régime alimentaire différent',
+   'L\'absence d\'hybrides entre elles'],
+  1,30,3,'application');
+
+addQ('S','SVT','Évolution & Biodiversité',
+  'La spéciation sympatrique des Amphilophus s\'explique par une sélection disruptive sur la largeur de la mâchoire, favorisant :',
+  ['Les individus à mâchoire intermédiaire',
+   'Uniquement les individus à très petite mâchoire',
+   'Les individus aux extrêmes (mâchoire large pour les algues côtières et étroite pour le zooplancton profond)',
+   'Un retour vers la forme ancestrale'],
+  2,35,4,'application');
+
+addQ('S','SVT','Évolution & Biodiversité',
+  'Homo sapiens se distingue morphologiquement des autres hominidés notamment par :',
+  ['Un trou occipital en position reculée (arrière du crâne)',
+   'Des canines très développées',
+   'Une mandibule en U et une première phalange incurvée',
+   'Un trou occipital centré, une bipédie parfaite, un grand volume crânien et un langage articulé'],
+  3,25,3,'connaissance');
+
+addQ('S','SVT','Évolution & Biodiversité',
+  'Selon l\'arbre phylogénétique (Bac 2017), l\'innovation évolutive exclusive à Homo sapiens et Homo ergaster est :',
+  ['L\'émail des dents épais','Les canines réduites et la première phalange droite','La mandibule parabolique','La bipédie complète'],
+  2,30,3,'application');
+
+addQ('S','SVT','Évolution & Biodiversité',
+  'La polyploïdisation naturelle chez les plantes (ex. fraise 4n=28) conduit à une amélioration du rendement car :',
+  ['La plante a plus de chromosomes donc plus de chlorophylle uniquement',
+   'La plante est stérile donc ne gaspille pas d\'énergie en graines',
+   'Les plantes polyploïdes ont souvent des cellules plus grandes, des fruits plus gros et une vigueur hybride accrue',
+   'La polyploïdisation supprime les maladies génétiques'],
+  2,30,3,'connaissance');
+
+// ══════════════════════════════════════════════════════════════════════════════
+// FIN DU PATCH SVT SPRINT 2
+// Total nouvelles questions SVT : 30
+// Total SVT Série S après patch : ~46 questions
+// Couverture : Génétique/Méiose · Immunologie · Reproduction/Hormones
+//              Géologie/Environnement · Évolution/Biodiversité
+// ══════════════════════════════════════════════════════════════════════════════
+
 
 // ─── S — FRANÇAIS ───
 addQ('S','Français S','Argumentation','Le registre polémique vise à :',['Convaincre en attaquant vivement l\'adversaire','Informer objectivement','Émouvoir le lecteur par la beauté du style','Décrire avec précision'],0,25,2,'connaissance');
@@ -1296,7 +2512,7 @@ addQ('L','Maths-Info L','Informatique','La structure conditionnelle SI...ALORS..
 addQ('L','Maths-Info L','Statistiques','Le mode d\'une série statistique est :',['La valeur moyenne','La valeur la plus fréquente','La valeur médiane','La valeur maximale moins la valeur minimale'],1,20,2,'connaissance');
 
 // ─── L — ANGLAIS ───
-addQ('L','Anglais L','April Fool\'s Day','Who changed New Year\'s Day from 1 April to 1 January?',['The French king','The English Parliament','Pope Gregory in 1562','King Henry VIII'],2,15,2,'connaissance');
+addQ('L','Anglais L','April Fool\'s Day','According to popular history, which country is most associated with the origin of April Fool\'s Day?',['England','Germany','Italy','France'],3,15,2,'connaissance');
 addQ('L','Anglais L','April Fool\'s Day','True or False: People who celebrated on 1 April were mocked as "April fools".',['False — the celebration was purely religious','False — no one mocked them','True — but only in France','True — they were ridiculed for ignoring the new calendar'],3,20,2,'vrai_faux');
 addQ('L','Anglais L','Vocabulary','The synonym of "made fun of" is:',['laughed at','celebrated','participated','annoyed'],0,20,2,'connaissance');
 addQ('L','Anglais L','Gap fill','Valentine\'s Day is named in honour of Saint Valentine, who it is believed ___ on Feb. 14.',['was married','was murdered','was born','was celebrated'],1,20,2,'gap_fill');
@@ -1436,19 +2652,19 @@ addQ('SG','OGRH','Rémunération',
   ['Remplace le salaire de base','Associe les salariés aux résultats de l\'entreprise — une prime collective liée aux performances','Est obligatoire dans toutes les entreprises','Est réservé aux cadres supérieurs'],
   1,25,2,'connaissance');
 addQ('SG','OGRH','Rémunération',
-  'La participation des salariés aux bénéfices est :',
-  ['Facultative pour toutes les entreprises','Réservée aux grandes entreprises cotées en bourse','Obligatoire pour les entreprises de plus de 50 salariés réalisant des bénéfices suffisants','Toujours égale pour tous les salariés'],
+  'L\'intéressement se distingue de la participation car il est :',
+  ['Obligatoire dans toutes les entreprises','Un avantage uniquement pour les cadres','Facultatif et lié à la performance collective de l\'entreprise','Un remboursement de frais professionnels'],
   2,25,3,'juridique');
 addQ('SG','OGRH','Conditions de travail',
-  'Le Document Unique d\'Évaluation des Risques (DUER) est :',
-  ['Un document facultatif','Un bilan financier social','Un contrat collectif de travail','Un document obligatoire recensant tous les risques professionnels dans l\'entreprise'],
+  'L\'hygiène et la sécurité au travail constituent une obligation :',
+  ['Facultative pour l\'employeur','À la seule charge du salarié','Partagée sans responsabilité précise','Principale de l\'employeur, qui doit prendre toutes les mesures pour protéger la santé physique et mentale de ses salariés'],
   3,25,2,'connaissance');
 addQ('SG','OGRH','Conditions de travail',
   'Le harcèlement moral au travail se caractérise par :',
   ['Des agissements répétés ayant pour effet une dégradation des conditions de travail portant atteinte aux droits et à la dignité du salarié','Une seule remarque désagréable','Un désaccord ponctuel','Un conflit entre collègues de même niveau'],
   0,25,3,'juridique');
 addQ('SG','OGRH','Dialogue social',
-  'Le Comité Social et Économique (CSE) — équivalent du comité d\'entreprise à Djibouti — a pour rôle de :',
+  'Les Délégués du Personnel (DP) et le Comité d\'Entreprise (CE), institutions représentatives du personnel à Djibouti, ont pour rôle de :',
   ['Gérer la comptabilité de l\'entreprise','Représenter les salariés et être consulté sur les décisions importantes affectant le personnel','Embaucher et licencier les salariés','Fixer les prix de vente'],
   1,20,2,'connaissance');
 addQ('SG','OGRH','Dialogue social',
@@ -3013,6 +4229,86 @@ function updateRobotMood(mood) {
   if(mood === 'excited') launchDiboParticles();
 }
 
+// ══════════════════════════════════════
+// DRAG DIBO — pointer events 1:1 (touch + souris)
+// ══════════════════════════════════════
+(function() {
+  var el = document.getElementById('diboFloat');
+  var wrap = document.getElementById('diboWrap');
+  if(!el || !wrap) return;
+
+  var isDragging = false;
+  var hasMoved = false;
+  // Coordonnées du pointeur au moment du pointerdown
+  var pStartX, pStartY;
+  // Position CSS de l'élément au moment du pointerdown (px numériques)
+  var elStartLeft, elStartBottom;
+
+  wrap.addEventListener('pointerdown', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    isDragging = true;
+    hasMoved = false;
+    el.classList.add('dragging');
+    wrap.setPointerCapture(e.pointerId);
+
+    // Lire la position CSS actuelle de l'élément (valeurs numériques)
+    var rect = el.getBoundingClientRect();
+    elStartLeft   = rect.left;
+    elStartBottom = window.innerHeight - rect.bottom;
+    // Fixer right:auto pour éviter les conflits CSS left/right
+    el.style.right = 'auto';
+    el.style.left   = elStartLeft + 'px';
+    el.style.bottom = elStartBottom + 'px';
+
+    pStartX = e.clientX;
+    pStartY = e.clientY;
+  }, { passive: false });
+
+  wrap.addEventListener('pointermove', function(e) {
+    if(!isDragging) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    var dx = e.clientX - pStartX;
+    var dy = e.clientY - pStartY;
+    if(Math.abs(dx) > 5 || Math.abs(dy) > 5) hasMoved = true;
+
+    var margin = 8;
+    var elW = el.offsetWidth  || 90;
+    var elH = el.offsetHeight || 130;
+
+    // Déplacement direct 1:1 — delta depuis la position initiale capturée
+    var newLeft   = elStartLeft   + dx;
+    var newBottom = elStartBottom - dy;  // dy positif = vers le bas = bottom diminue
+
+    // Contraindre dans les bords du viewport
+    newLeft   = Math.max(margin, Math.min(window.innerWidth  - elW - margin, newLeft));
+    newBottom = Math.max(margin, Math.min(window.innerHeight - elH - margin, newBottom));
+
+    el.style.left   = newLeft   + 'px';
+    el.style.bottom = newBottom + 'px';
+  }, { passive: false });
+
+  function endDrag(e) {
+    if(!isDragging) return;
+    isDragging = false;
+    el.classList.remove('dragging');
+    // Snap animé uniquement au release (pas pendant le drag)
+    el.style.transition = 'left 0.3s cubic-bezier(0.23,1,0.32,1), bottom 0.3s cubic-bezier(0.23,1,0.32,1)';
+    setTimeout(function(){ el.style.transition = 'none'; }, 350);
+    if(!hasMoved) {
+      onNuurClick();
+    }
+  }
+
+  wrap.addEventListener('pointerup',     endDrag);
+  wrap.addEventListener('pointercancel', function() {
+    isDragging = false;
+    el.classList.remove('dragging');
+  });
+})();
+
 function showDiboSpeech(text) {
   var s = document.getElementById('diboSpeech');
   s.textContent = text;
@@ -3067,21 +4363,22 @@ function launchDiboParticles() {
 // ══════════════════════════════════════
 var nuurLastQuestion = { text:'', correctAnswer:'', wrongAnswer:'', matiere:'' };
 
-var nuurSystemPrompt = `Tu es NUUR (signifiant "lumière" en somali/afar), le compagnon pédagogique du Quiz Révision Bac Djibouti 2026.
+var nuurSystemPrompt = `Tu es NUUR ("lumière" en somali/afar), compagnon pédagogique du Quiz Bac Djibouti 2026.
 
-RÈGLES STRICTES :
-- Tu parles UNIQUEMENT de la question posée dans le quiz
-- Sur mauvaise réponse : explique POURQUOI c'était faux, donne la méthode, donne un moyen mémo
-- Sur demande d'aide : approfondis le concept de la question actuelle
-- Réponds en français, clairement, en 3-5 lignes maximum
-- Termine TOUJOURS par une astuce mémo courte séparée par "💡 ASTUCE:"
-- Ton ton est encourageant, bienveillant, jamais condescendant
-- Tu connais le programme officiel du Bac Djibouti, les coefficients, et les attentes des correcteurs
-- Si le contexte est djiboutien (FDJ, Bab-el-Mandeb, etc.), intègre-le
+MISSION STRICTE — tu interviens UNIQUEMENT après une réponse de l'élève :
+• MAUVAISE réponse → analyse l'erreur précise, explique le concept, donne un moyen mémo
+• BONNE réponse (si demande d'approfondissement) → enrichis le concept, donne un exemple bac-type
+• JAMAIS de cours général non demandé — reste ancré à la question
 
-FORMAT OBLIGATOIRE :
-[Explication courte — 3-4 lignes]
-💡 ASTUCE: [une phrase mémo percutante]`;
+RÈGLES ABSOLUES :
+- Réponse en français, 3-4 lignes maximum, ton bienveillant et direct
+- Contextualise à Djibouti quand pertinent (lac Assal, FDJ, Bab-el-Mandeb, économie djiboutienne…)
+- Tu connais les coefficients, le programme et les exigences du Bac Djibouti 2026
+- Termine OBLIGATOIREMENT par "💡 ASTUCE:" suivi d'une phrase mémo percutante
+
+FORMAT DE RÉPONSE :
+[Analyse de l'erreur ou approfondissement — 3-4 lignes précises]
+💡 ASTUCE: [moyen mémo court et efficace]`;
 
 function activateNuurOnWrong(questionText, correctAnswer, wrongAnswer, matiere) {
   nuurLastQuestion = { text:questionText, correctAnswer:correctAnswer, wrongAnswer:wrongAnswer, matiere:matiere };
@@ -3135,25 +4432,52 @@ function closeNuur() {
 }
 
 async function callNuurAPI(userPrompt, callback) {
+  var _cbCalled = false;
+  function safeCb(msg, tip) {
+    if(_cbCalled) return;
+    _cbCalled = true;
+    callback(msg, tip || '');
+  }
+  var timeoutId = setTimeout(function() {
+    safeCb('⏱️ NUUR met trop de temps à répondre. Vérifie ta connexion — la bonne réponse est surlignée en vert.', '💡 ASTUCE: Note la bonne réponse sur ton cahier pour l\'ancrer en mémoire.');
+  }, 12000);
   try {
+    var controller = new AbortController();
+    var fetchTimer = setTimeout(function(){ controller.abort(); }, 11000);
     var response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 350,
+        max_tokens: 400,
         system: nuurSystemPrompt,
         messages: [{ role: 'user', content: userPrompt }]
       })
     });
+    clearTimeout(fetchTimer);
+    clearTimeout(timeoutId);
+    if(!response.ok) {
+      if(response.status === 401 || response.status === 403) {
+        safeCb('🔑 NUUR a besoin d\'une clé API pour fonctionner. La bonne réponse est surlignée en vert.', '💡 ASTUCE: Consulte ta fiche flash pour revoir ce concept.');
+      } else {
+        safeCb('⚠️ NUUR indisponible (erreur ' + response.status + '). La bonne réponse est surlignée en vert.', '');
+      }
+      return;
+    }
     var data = await response.json();
-    var fullText = (data.content && data.content[0]) ? data.content[0].text : '';
+    var fullText = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : '';
+    if(!fullText) { safeCb('NUUR n\'a pas pu générer d\'explication. Regarde la bonne réponse surlignée en vert.', ''); return; }
     var parts = fullText.split('💡 ASTUCE:');
     var explanation = parts[0].trim().replace(/\n/g, '<br>');
     var tip = parts[1] ? parts[1].trim() : '';
-    callback(explanation, tip);
+    safeCb(explanation, tip);
   } catch(err) {
-    callback('Je ne peux pas me connecter pour l\'instant. Regarde la bonne réponse surlignée en vert — retiens bien la méthode.', '');
+    clearTimeout(timeoutId);
+    var msg = (err.name === 'AbortError')
+      ? '⏱️ Connexion trop lente. La bonne réponse est surlignée en vert.'
+      : '📡 Pas de connexion. NUUR fonctionne en ligne — la bonne réponse est surlignée en vert.';
+    safeCb(msg, '💡 ASTUCE: Sans connexion, utilise les fiches flash pour réviser ce concept.');
   }
 }
 
@@ -3169,7 +4493,7 @@ SG: [
   },
   { id:'sg-ogrh-motivation', icon:'🧠', bg:'#F3EEFF', color:'#9B5DE5',
     title:'OGRH — Motivation & Rémunération', sub:'Maslow · Herzberg · McGregor · Types de salaires',
-    content: '<div class="fiche-section-title" style="color:#9B5DE5">🔺 Pyramide de Maslow (1954)</div><table class="fiche-table"><tr><th>Niveau</th><th>Besoin</th><th>Exemple concret</th></tr><tr><td>5</td><td>Accomplissement</td><td>Créativité, réalisation de soi, projet personnel</td></tr><tr><td>4</td><td>Estime</td><td>Reconnaissance, titre, promotion</td></tr><tr><td>3</td><td>Appartenance</td><td>Équipe, ambiance, syndicat</td></tr><tr><td>2</td><td>Sécurité</td><td>CDI, mutuelle, stabilité financière</td></tr><tr><td>1</td><td>Physiologique</td><td>Salaire de base, repas, logement</td></tr></table><div class="fiche-section-title" style="color:#9B5DE5">⚡ Herzberg — 2 facteurs</div><div class="fiche-point"><span class="fiche-point-dot" style="background:#EF476F"></span><strong>Hygiène</strong> (évitent l\'insatisfaction) : salaire, sécurité, conditions, relations hiérarchiques</div><div class="fiche-point"><span class="fiche-point-dot" style="background:#06D6A0"></span><strong>Motivation</strong> (créent la satisfaction) : responsabilité, reconnaissance, intérêt du travail, accomplissement</div><div class="fiche-warning"><span>⚠️</span><span>Piège bac : augmenter le salaire réduit l\'insatisfaction MAIS ne crée PAS de motivation durable (Herzberg).</span></div><div class="fiche-section-title" style="color:#9B5DE5">🧩 McGregor X/Y</div><table class="fiche-table"><tr><th>Théorie</th><th>Vision du salarié</th><th>Style de management</th></tr><tr><td>X</td><td>Paresseux, fuit le travail</td><td>Contrôle, autorité, sanctions</td></tr><tr><td>Y</td><td>Motivé, cherche responsabilités</td><td>Autonomie, confiance, participation</td></tr></table><div class="fiche-section-title" style="color:#9B5DE5">💰 Rémunération</div><div class="fiche-formula">Salaire net = Salaire brut − Cotisations salariales (~22%)\nIntéressement = prime collective liée aux résultats de l\'entreprise\nParticipation = obligatoire > 50 salariés si bénéfice suffisant\nSalaire au mérite = variable selon performance individuelle</div><div class="fiche-memo"><span>💡</span><span>Vroom : Motivation = Expectation × Instrumentalité × Valence. Si l\'un = 0, motivation = 0.</span></div>'
+    content: '<div class="fiche-section-title" style="color:#9B5DE5">🔺 Pyramide de Maslow (1954)</div><table class="fiche-table"><tr><th>Niveau</th><th>Besoin</th><th>Exemple concret</th></tr><tr><td>5</td><td>Accomplissement</td><td>Créativité, réalisation de soi, projet personnel</td></tr><tr><td>4</td><td>Estime</td><td>Reconnaissance, titre, promotion</td></tr><tr><td>3</td><td>Appartenance</td><td>Équipe, ambiance, syndicat</td></tr><tr><td>2</td><td>Sécurité</td><td>CDI, mutuelle, stabilité financière</td></tr><tr><td>1</td><td>Physiologique</td><td>Salaire de base, repas, logement</td></tr></table><div class="fiche-section-title" style="color:#9B5DE5">⚡ Herzberg — 2 facteurs</div><div class="fiche-point"><span class="fiche-point-dot" style="background:#EF476F"></span><strong>Hygiène</strong> (évitent l\'insatisfaction) : salaire, sécurité, conditions, relations hiérarchiques</div><div class="fiche-point"><span class="fiche-point-dot" style="background:#06D6A0"></span><strong>Motivation</strong> (créent la satisfaction) : responsabilité, reconnaissance, intérêt du travail, accomplissement</div><div class="fiche-warning"><span>⚠️</span><span>Piège bac : augmenter le salaire réduit l\'insatisfaction MAIS ne crée PAS de motivation durable (Herzberg).</span></div><div class="fiche-section-title" style="color:#9B5DE5">🧩 McGregor X/Y</div><table class="fiche-table"><tr><th>Théorie</th><th>Vision du salarié</th><th>Style de management</th></tr><tr><td>X</td><td>Paresseux, fuit le travail</td><td>Contrôle, autorité, sanctions</td></tr><tr><td>Y</td><td>Motivé, cherche responsabilités</td><td>Autonomie, confiance, participation</td></tr></table><div class="fiche-section-title" style="color:#9B5DE5">💰 Rémunération</div><div class="fiche-formula">Salaire net = Salaire brut − Cotisations salariales (~22%)\nIntéressement = prime collective liée aux résultats de l\'entreprise\nIntéressement = prime collective facultative liée aux résultats\nSalaire au mérite = variable selon performance individuelle</div><div class="fiche-memo"><span>💡</span><span>Vroom : Motivation = Expectation × Instrumentalité × Valence. Si l\'un = 0, motivation = 0.</span></div>'
   },
   { id:'sg-ogrh-formation', icon:'🎓', bg:'#E0FAF4', color:'#06D6A0',
     title:'OGRH — Formation & GPEC & Évaluation', sub:'PDC · GPEC · Entretien annuel · 360°',
@@ -3177,11 +4501,11 @@ SG: [
   },
   { id:'sg-ogrh-conflits', icon:'🤝', bg:'#FFF0E0', color:'#FF6B35',
     title:'OGRH — Conflits & Dialogue social', sub:'Types de conflits · Syndicats · Grève · Négociation',
-    content: '<div class="fiche-section-title" style="color:#FF6B35">⚡ Types de conflits</div><table class="fiche-table"><tr><th>Type</th><th>Exemples</th></tr><tr><td>Conflits individuels</td><td>Harcèlement, discrimination, litige salaire</td></tr><tr><td>Conflits collectifs</td><td>Grève, ralentissement, manifestation</td></tr><tr><td>Conflits d\'intérêts</td><td>Salaires, conditions de travail, horaires</td></tr><tr><td>Conflits de droit</td><td>Violation d\'une loi ou d\'une convention</td></tr></table><div class="fiche-section-title" style="color:#FF6B35">🏛️ Institutions représentatives</div><table class="fiche-table"><tr><th>Institution</th><th>Rôle</th><th>Seuil</th></tr><tr><td>CSE (Comité Social Économique)</td><td>Représentation globale salariés</td><td>11 salariés</td></tr><tr><td>Délégués syndicaux</td><td>Négociation collective, accord entreprise</td><td>50 salariés</td></tr><tr><td>Inspection du travail</td><td>Contrôle application droit du travail</td><td>Toujours</td></tr></table><div class="fiche-section-title" style="color:#FF6B35">✊ La grève</div><div class="fiche-point"><span class="fiche-point-dot" style="background:#EF476F"></span>Droit constitutionnel = cessation collective, concertée et totale du travail</div><div class="fiche-point"><span class="fiche-point-dot" style="background:#06D6A0"></span>Mode de résolution : conciliation → médiation → arbitrage</div><div class="fiche-memo"><span>💡</span><span>Harcèlement moral = actes RÉPÉTÉS dégradant les conditions de travail. Une seule remarque ne suffit pas légalement.</span></div>'
+    content: '<div class="fiche-section-title" style="color:#FF6B35">⚡ Types de conflits</div><table class="fiche-table"><tr><th>Type</th><th>Exemples</th></tr><tr><td>Conflits individuels</td><td>Harcèlement, discrimination, litige salaire</td></tr><tr><td>Conflits collectifs</td><td>Grève, ralentissement, manifestation</td></tr><tr><td>Conflits d\'intérêts</td><td>Salaires, conditions de travail, horaires</td></tr><tr><td>Conflits de droit</td><td>Violation d\'une loi ou d\'une convention</td></tr></table><div class="fiche-section-title" style="color:#FF6B35">🏛️ Institutions représentatives</div><table class="fiche-table"><tr><th>Institution</th><th>Rôle</th><th>Seuil</th></tr><tr><td>Délégués du Personnel (DP)</td><td>Représentation des salariés, transmission des revendications à l\'employeur</td><td>11 salariés (Code du travail DJ)</td></tr><tr><td>Délégués syndicaux</td><td>Négociation collective, accords d\'entreprise</td><td>Entreprises dotées d\'un syndicat représentatif</td></tr><tr><td>Inspection du travail</td><td>Contrôle application droit du travail</td><td>Toujours</td></tr></table><div class="fiche-section-title" style="color:#FF6B35">✊ La grève</div><div class="fiche-point"><span class="fiche-point-dot" style="background:#EF476F"></span>Droit constitutionnel = cessation collective, concertée et totale du travail</div><div class="fiche-point"><span class="fiche-point-dot" style="background:#06D6A0"></span>Mode de résolution : conciliation → médiation → arbitrage</div><div class="fiche-memo"><span>💡</span><span>Harcèlement moral = actes RÉPÉTÉS dégradant les conditions de travail. Une seule remarque ne suffit pas légalement.</span></div>'
   },
   { id:'sg-ogrh-droit-travail', icon:'⚖️', bg:'#FFF8E1', color:'#B8860B',
     title:'OGRH — Droit du travail', sub:'Contrats · CDI/CDD · Rupture · Sanctions disciplinaires',
-    content: '<div class="fiche-section-title" style="color:#B8860B">📋 Les contrats de travail</div><table class="fiche-table"><tr><th>Type</th><th>Durée</th><th>Points clés</th></tr><tr><td>CDI</td><td>Indéterminée</td><td>Contrat de droit commun, protection maximale</td></tr><tr><td>CDD</td><td>Fixée à l\'avance</td><td>Motif obligatoire, prime fin contrat 10%</td></tr><tr><td>Alternance (apprentissage)</td><td>1 à 3 ans</td><td>Formation + travail, rémunéré (% SMIC selon âge)</td></tr><tr><td>Stage</td><td>Limitée</td><td>Non salarié, gratification si > 2 mois</td></tr></table><div class="fiche-section-title" style="color:#B8860B">🚫 Rupture du CDI</div><table class="fiche-table"><tr><th>Mode de rupture</th><th>Indemnités ?</th><th>Préavis ?</th></tr><tr><td>Licenciement cause réelle et sérieuse</td><td>✅ Oui</td><td>✅ Oui</td></tr><tr><td>Faute grave</td><td>❌ Non</td><td>❌ Non</td></tr><tr><td>Faute lourde (intention nuire)</td><td>❌ Non</td><td>❌ Non</td></tr><tr><td>Rupture conventionnelle</td><td>✅ Oui (négociée)</td><td>Délai légal homologation</td></tr><tr><td>Démission</td><td>❌ Non</td><td>✅ Oui</td></tr></table><div class="fiche-section-title" style="color:#B8860B">📐 Échelle des sanctions</div><div class="fiche-formula">Avertissement → Blâme → Mise à pied disciplinaire → Mutation → Licenciement pour faute</div><div class="fiche-memo"><span>💡</span><span>Procédure licenciement : convocation → entretien → délai réflexion → notification écrite motivée.</span></div>'
+    content: '<div class="fiche-section-title" style="color:#B8860B">📋 Les contrats de travail</div><table class="fiche-table"><tr><th>Type</th><th>Durée</th><th>Points clés</th></tr><tr><td>CDI</td><td>Indéterminée</td><td>Contrat de droit commun, protection maximale</td></tr><tr><td>CDD</td><td>Fixée à l\'avance</td><td>Motif obligatoire, indemnité de précarité en fin de contrat (selon Code du travail)</td></tr><tr><td>Apprentissage / alternance</td><td>1 à 3 ans</td><td>Formation + travail, rémunéré (% du SMG selon ancienneté et qualifications)</td></tr><tr><td>Stage</td><td>Limitée</td><td>Non salarié, gratification si > 2 mois</td></tr></table><div class="fiche-section-title" style="color:#B8860B">🚫 Rupture du CDI</div><table class="fiche-table"><tr><th>Mode de rupture</th><th>Indemnités ?</th><th>Préavis ?</th></tr><tr><td>Licenciement cause réelle et sérieuse</td><td>✅ Oui</td><td>✅ Oui</td></tr><tr><td>Faute grave</td><td>❌ Non</td><td>❌ Non</td></tr><tr><td>Faute lourde (intention nuire)</td><td>❌ Non</td><td>❌ Non</td></tr><tr><td>Rupture conventionnelle</td><td>✅ Oui (négociée)</td><td>Délai légal homologation</td></tr><tr><td>Démission</td><td>❌ Non</td><td>✅ Oui</td></tr></table><div class="fiche-section-title" style="color:#B8860B">📐 Échelle des sanctions</div><div class="fiche-formula">Avertissement → Blâme → Mise à pied disciplinaire → Mutation → Licenciement pour faute</div><div class="fiche-memo"><span>💡</span><span>Procédure licenciement : convocation → entretien → délai réflexion → notification écrite motivée.</span></div>'
   },
   { id:'sg-gfm-sig', icon:'📊', bg:'#FFF8E1', color:'#EF8C38',
     title:'GFM — SIG, CAF & Seuil de rentabilité', sub:'Cascade des soldes · Formules essentielles · Calculs pas à pas',
@@ -3581,6 +4905,365 @@ function toggleMethode(id) {
     setTimeout(function(){ card.scrollIntoView({behavior:'smooth',block:'nearest'}); }, 150);
   }
 }
+
+// ══════════════════════════════════════
+// SPRINT 3 — MUSIQUE D'AMBIANCE DOUCE (nappes ambient, zéro percussion)
+// Web Audio API pure — aucun fichier externe — fonctionne offline
+// ══════════════════════════════════════
+var audioCtx = null;
+var musicPlaying = false;
+var _ambientNodes = [];
+
+// Simulation de reverb par convolution simple (All-Pass + delay network)
+function createReverb(ctx, seconds, decay) {
+  var convolver = ctx.createConvolver();
+  var rate = ctx.sampleRate;
+  var length = rate * seconds;
+  var impulse = ctx.createBuffer(2, length, rate);
+  for(var ch = 0; ch < 2; ch++) {
+    var data = impulse.getChannelData(ch);
+    for(var i = 0; i < length; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
+    }
+  }
+  convolver.buffer = impulse;
+  return convolver;
+}
+
+// Nappe douce : un oscillateur sine/triangle filtré passe-bas, enveloppe lente
+function createPad(ctx, reverb, masterGain, freq, type, vol, attackT, sustainT, releaseT) {
+  var osc = ctx.createOscillator();
+  var oscGain = ctx.createGain();
+  var filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 600 + freq * 0.5;
+  filter.Q.value = 0.5;
+  osc.type = type;
+  osc.frequency.value = freq;
+  // Micro-détune pour chaleur
+  osc.detune.value = (Math.random() - 0.5) * 8;
+  osc.connect(filter);
+  filter.connect(oscGain);
+  oscGain.connect(reverb);
+  oscGain.connect(masterGain); // signal direct (mix dry)
+  var now = ctx.currentTime;
+  oscGain.gain.setValueAtTime(0, now);
+  oscGain.gain.linearRampToValueAtTime(vol, now + attackT);
+  oscGain.gain.setValueAtTime(vol, now + attackT + sustainT);
+  oscGain.gain.linearRampToValueAtTime(0, now + attackT + sustainT + releaseT);
+  osc.start(now);
+  osc.stop(now + attackT + sustainT + releaseT + 0.1);
+  _ambientNodes.push(osc);
+  return osc;
+}
+
+// Accord ambiant : Am add9 → Fmaj7 → C → G (boucle de 4 accords)
+var _ambChords = [
+  // Am add9 : A C E B
+  [220, 261.6, 329.6, 246.9],
+  // Fmaj7 : F A C E
+  [174.6, 220, 261.6, 329.6],
+  // C maj : C E G C (octave haute)
+  [261.6, 329.6, 392, 523.3],
+  // G add2 : G B D A
+  [196, 246.9, 293.7, 220]
+];
+var _ambChordIdx = 0;
+var _ambTimeout = null;
+var _ambReverb = null;
+var _ambMaster = null;
+var CHORD_DURATION = 6; // secondes par accord
+
+function scheduleNextChord() {
+  if(!musicPlaying || !audioCtx) return;
+  var chord = _ambChords[_ambChordIdx % _ambChords.length];
+  _ambChordIdx++;
+  // Nappe principale — triangle, très douce
+  chord.forEach(function(freq, i) {
+    createPad(audioCtx, _ambReverb, _ambMaster, freq, 'triangle', 0.055, 1.8, CHORD_DURATION - 2, 2.5);
+    // Octave haute harmonique — sine très subtile
+    createPad(audioCtx, _ambReverb, _ambMaster, freq * 2, 'sine', 0.018, 2.2, CHORD_DURATION - 3, 2.0);
+  });
+  // Note de basse douce (fondamentale)
+  createPad(audioCtx, _ambReverb, _ambMaster, chord[0] / 2, 'sine', 0.07, 2.5, CHORD_DURATION - 1.5, 3.0);
+  // Programmer l'accord suivant (chevauchement de 1.5s pour fondu enchaîné)
+  _ambTimeout = setTimeout(scheduleNextChord, (CHORD_DURATION - 1.5) * 1000);
+}
+
+function startMusic() {
+  try {
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    // Gain maître (volume global bas)
+    _ambMaster = audioCtx.createGain();
+    _ambMaster.gain.value = 0.28;
+    _ambMaster.connect(audioCtx.destination);
+    // Reverb longue et douce (3.5s, decay 2.5)
+    _ambReverb = createReverb(audioCtx, 3.5, 2.5);
+    var reverbGain = audioCtx.createGain();
+    reverbGain.gain.value = 0.55; // mix reverb
+    _ambReverb.connect(reverbGain);
+    reverbGain.connect(audioCtx.destination);
+    musicPlaying = true;
+    _ambChordIdx = 0;
+    scheduleNextChord();
+    document.getElementById('musicToggleBtn').textContent = '🎵';
+    document.getElementById('musicToggleBtn').style.background = 'rgba(6,214,160,0.4)';
+    document.getElementById('musicToggleBtn').style.borderColor = 'rgba(6,214,160,0.8)';
+  } catch(e) { console.log('Audio non disponible:', e); }
+}
+
+function stopMusic() {
+  musicPlaying = false;
+  if(_ambTimeout) clearTimeout(_ambTimeout);
+  _ambientNodes.forEach(function(n){ try{ n.stop(); }catch(e){} });
+  _ambientNodes = [];
+  // Fade out du master avant de couper
+  if(_ambMaster) {
+    try {
+      _ambMaster.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.8);
+    } catch(e) {}
+  }
+  document.getElementById('musicToggleBtn').textContent = '🔇';
+  document.getElementById('musicToggleBtn').style.background = 'rgba(255,255,255,0.18)';
+  document.getElementById('musicToggleBtn').style.borderColor = 'rgba(255,255,255,0.35)';
+}
+
+function toggleMusic() {
+  if(musicPlaying) { stopMusic(); }
+  else { startMusic(); }
+}
+
+// ══════════════════════════════════════
+// SPRINT 3 — ANGLAIS : QUESTIONS SUPPLÉMENTAIRES (15 par série)
+// Compréhension écrite · Expression · Vocabulaire avancé
+// ══════════════════════════════════════
+
+// ── ANGLAIS SG (B1/B2 professionnel) — 15 nouvelles questions ──
+addQ('SG','Anglais SG','Reading Comprehension — HR',
+  'Read: "The company is recruiting a Marketing Manager. Candidates must have 5 years of experience and a university degree. Applications close on 30 June." — What is the minimum experience required?',
+  ['2 years','3 years','5 years','7 years'],2,20,2,'comprehension');
+addQ('SG','Anglais SG','Reading Comprehension — HR',
+  'Using the same text: What is the LAST day to apply?',
+  ['30 January','30 April','30 May','30 June'],3,20,2,'comprehension');
+addQ('SG','Anglais SG','Reading Comprehension — Finance',
+  'Read: "Our net profit rose by 12% compared to last year, despite a 5% increase in operating costs." — Did the company make more or less profit than last year?',
+  ['Less profit — costs rose','Same profit','More profit — it rose 12%','Cannot be determined'],2,20,2,'comprehension');
+addQ('SG','Anglais SG','Vocabulary — Business',
+  'A "deficit" means:',
+  ['Spending exceeds income','Income exceeds spending','A tax refund','A government bonus'],0,20,2,'connaissance');
+addQ('SG','Anglais SG','Vocabulary — Business',
+  'To "negotiate" a contract means to:',
+  ['Sign it immediately','Refuse it','Discuss terms to reach an agreement','Cancel it'],2,20,2,'connaissance');
+addQ('SG','Anglais SG','Vocabulary — HR',
+  'A "payslip" (bulletin de salaire) shows:',
+  ['The company\'s annual revenue','An employee\'s salary details and deductions','A client\'s invoice','The company budget'],1,20,2,'connaissance');
+addQ('SG','Anglais SG','Grammar in context',
+  'Choose the correct formal sentence for a business email: "We ___ to confirm your order has been dispatched."',
+  ['would like','would liked','will liking','are like'],0,20,2,'grammaire');
+addQ('SG','Anglais SG','Grammar in context',
+  'Passive voice: "The manager ___ the report yesterday." → passive form:',
+  ['The report was written by the manager yesterday','The report is written yesterday','The manager is written the report','The report were written'],0,20,2,'grammaire');
+addQ('SG','Anglais SG','Expression écrite',
+  'Which phrase is most appropriate to OPEN a formal complaint email?',
+  ['"Hey, I have a problem"','I am writing to express my dissatisfaction regarding..."','"I want to tell you something bad"','"You made a mistake"'],1,20,2,'expression');
+addQ('SG','Anglais SG','Expression écrite',
+  'Which phrase is appropriate to CLOSE a formal email?',
+  ['"Bye for now"','See you later"','I look forward to hearing from you. Yours sincerely,"','Thanks and stuff"'],2,20,2,'expression');
+addQ('SG','Anglais SG','Vocabulary — Finance',
+  '"Liabilities" on a balance sheet refer to:',
+  ['What the company owns (assets)','What the company owes (debts)','The company\'s profits','Shareholders\' equity'],1,20,2,'connaissance');
+addQ('SG','Anglais SG','Vocabulary — Management',
+  'A "deadline" in a project is:',
+  ['The start date','The budget limit','The latest date by which a task must be completed','The team leader'],2,20,2,'connaissance');
+addQ('SG','Anglais SG','Grammar in context',
+  'Correct use of present perfect: "The company ___ its sales strategy three times this year."',
+  ['changed','has changed','changes','had changed'],1,20,2,'grammaire');
+addQ('SG','Anglais SG','Reading Comprehension — Management',
+  'Read: "Following the restructuring, 15 employees were made redundant. The remaining staff received training to handle new responsibilities." — What happened to the 15 employees?',
+  ['They were promoted','They received training','They lost their jobs','They transferred to another department'],2,20,2,'comprehension');
+addQ('SG','Anglais SG','Vocabulary — Trade',
+  '"Imports" are goods that a country:',
+  ['Produces and sells abroad','Buys from other countries','Manufactures locally','Taxes on exports'],1,20,2,'connaissance');
+
+// ── ANGLAIS S (B2/C1 — sciences) — 15 nouvelles questions ──
+addQ('S','Anglais S','Reading — Climate',
+  'Read: "Scientists warn that global temperatures could rise by 1.5°C above pre-industrial levels within the next decade if emissions are not reduced significantly." — What will happen if emissions are not reduced?',
+  ['Temperatures will fall','Temperatures may rise 1.5°C','Emissions will increase by 1.5°C','Scientists will publish a report'],1,20,2,'comprehension');
+addQ('S','Anglais S','Reading — Technology',
+  'Read: "Artificial intelligence is transforming healthcare by enabling faster diagnosis, personalised treatment plans, and predicting disease outbreaks." — According to the text, what is ONE benefit of AI in healthcare?',
+  ['Replacing all doctors','Faster diagnosis','Reducing hospital costs only','Building more hospitals'],1,20,2,'comprehension');
+addQ('S','Anglais S','Vocabulary — Science',
+  '"Sustainable" development means development that:',
+  ['Destroys natural resources quickly','Meets current needs without compromising future generations','Focuses only on economic growth','Ignores the environment'],1,20,2,'connaissance');
+addQ('S','Anglais S','Vocabulary — Science',
+  'To "hypothesise" means to:',
+  ['Prove a theory with data','Form an educated guess or explanation before testing','Reject an experiment','Publish results'],1,20,2,'connaissance');
+addQ('S','Anglais S','Grammar',
+  '"If we ___ the experiment correctly, we would have obtained accurate results." (Past conditional)',
+  ['conduct','conducted','had conducted','have conducted'],2,20,2,'grammaire');
+addQ('S','Anglais S','Grammar',
+  'Choose the correct relative clause: "The scientist ___ discovered penicillin was Alexander Fleming."',
+  ['which','what','who','whom'],2,20,2,'grammaire');
+addQ('S','Anglais S','Vocabulary — Environment',
+  '"Biodiversity" refers to:',
+  ['Only the number of plant species','The variety of life forms in an ecosystem','The study of human biology','A type of chemical reaction'],1,20,2,'connaissance');
+addQ('S','Anglais S','Reading — Space',
+  'Read: "Space exploration has led to many technological innovations, including GPS, water purification systems, and memory foam." — Which of the following was developed as a result of space research?',
+  ['The internet','GPS','Solar panels','Electric cars'],1,20,2,'comprehension');
+addQ('S','Anglais S','Grammar',
+  'Passive voice: "Researchers ___ the vaccine last year." → passive:',
+  ['The vaccine was developed by researchers last year','The vaccine is developed last year','Researchers are developed the vaccine','The vaccine has been develop'],0,20,2,'grammaire');
+addQ('S','Anglais S','Vocabulary — Technology',
+  '"Renewable energy" sources include:',
+  ['Coal and natural gas','Solar, wind, and hydroelectric power','Nuclear energy only','Diesel and petrol'],1,20,2,'connaissance');
+addQ('S','Anglais S','Expression',
+  'Which sentence best SUMMARISES an argument in a written essay?',
+  ['"And so, um, basically..."','In conclusion, the evidence suggests that climate change poses a significant threat to biodiversity."','I think maybe it could be said that..."','Lots of scientists say lots of things about this."'],1,20,2,'expression');
+addQ('S','Anglais S','Vocabulary — Medicine',
+  '"Pandemic" means a disease outbreak that:',
+  ['Affects only one city','Is contained within one country','Spreads globally across many countries','Affects only animals'],2,20,2,'connaissance');
+addQ('S','Anglais S','Grammar',
+  '"By the time the results were published, the team ___ the experiment twice." (past perfect)',
+  ['repeated','has repeated','had repeated','repeats'],2,20,2,'grammaire');
+addQ('S','Anglais S','Reading — Ethics',
+  'Read: "Genetic modification raises ethical questions about the boundaries of scientific intervention in nature and human identity." — What concern does the text raise about genetic modification?',
+  ['It is too expensive','It raises ethical questions','It does not work','It is illegal worldwide'],1,20,2,'comprehension');
+addQ('S','Anglais S','Vocabulary — Data',
+  'In a scientific study, the "control group" is:',
+  ['The group that receives the treatment','The group NOT given the treatment, used for comparison','The most important group','The group with the best results'],1,20,2,'connaissance');
+
+// ── ANGLAIS ES (B1/B2 — socioéconomique) — 15 nouvelles questions ──
+addQ('ES','Anglais ES','Reading — Society',
+  'Read: "Youth unemployment in many African countries exceeds 30%, forcing many young people to seek opportunities abroad." — What does "exceeds 30%" mean?',
+  ['Is less than 30%','Is exactly 30%','Is more than 30%','Is 30% on average'],2,20,2,'comprehension');
+addQ('ES','Anglais ES','Reading — Economy',
+  'Read: "The government introduced a new tax policy to reduce income inequality and fund public services." — What are the TWO goals of this policy?',
+  ['Increase exports and reduce debt','Reduce inequality AND fund public services','Increase employment and lower taxes','Fund the military and build roads'],1,20,2,'comprehension');
+addQ('ES','Anglais ES','Vocabulary — Society',
+  '"Inequality" in society means:',
+  ['Everyone has the same income','An unfair distribution of wealth, opportunities, or rights','A type of government policy','Equal access to education'],1,20,2,'connaissance');
+addQ('ES','Anglais ES','Vocabulary — Economy',
+  '"Inflation" causes the purchasing power of money to:',
+  ['Increase','Stay the same','Decrease','Double'],2,20,2,'connaissance');
+addQ('ES','Anglais ES','Grammar',
+  '"The government should ___ more in education to reduce poverty." (modal + infinitive)',
+  ['investing','invested','invest','invests'],2,20,2,'grammaire');
+addQ('ES','Anglais ES','Grammar',
+  'Present perfect: "Social inequality ___ significantly over the last decade."',
+  ['grow','grew','has grown','had grown'],2,20,2,'grammaire');
+addQ('ES','Anglais ES','Vocabulary — Politics',
+  'A "referendum" is:',
+  ['A type of election for a president','A direct vote by citizens on a specific question','A parliamentary debate','A government budget'],1,20,2,'connaissance');
+addQ('ES','Anglais ES','Reading — Globalisation',
+  'Read: "Globalisation has increased trade between nations, but critics argue it has also widened the gap between rich and poor countries." — What is the critics\' argument?',
+  ['Globalisation only benefits developing countries','Globalisation has widened inequality between countries','Globalisation reduces trade','Globalisation is positive for all'],1,20,2,'comprehension');
+addQ('ES','Anglais ES','Grammar',
+  'Correct comparative: "The unemployment rate this year is ___ than last year."',
+  ['more high','higher','more higher','highest'],1,20,2,'grammaire');
+addQ('ES','Anglais ES','Vocabulary — Development',
+  'The "Human Development Index" (HDI) measures:',
+  ['Only a country\'s GDP','Only education levels','Health, education, and income combined','Military strength'],2,20,2,'connaissance');
+addQ('ES','Anglais ES','Expression',
+  'To express a CONTRAST in an essay, you would use:',
+  ['"Furthermore" / "Moreover"','However" / "Nevertheless"','"Therefore" / "As a result"','"For example" / "For instance"'],1,20,2,'expression');
+addQ('ES','Anglais ES','Vocabulary — Trade',
+  '"Free trade" means:',
+  ['Trade without any money','Trade between countries with no tariffs or barriers','Trade within one country only','Government-controlled trade'],1,20,2,'connaissance');
+addQ('ES','Anglais ES','Reading — Migration',
+  'Read: "Economic migrants leave their home countries in search of better job opportunities and higher living standards." — Why do economic migrants move?',
+  ['To escape political violence','For better jobs and living standards','For educational purposes only','Due to natural disasters'],1,20,2,'comprehension');
+addQ('ES','Anglais ES','Grammar',
+  'Passive: "New trade agreements ___ by the government next year." (future passive)',
+  ['will signed','will be sign','will be signed','are signed'],2,20,2,'grammaire');
+addQ('ES','Anglais ES','Vocabulary — Labour',
+  'A "trade union" (syndicat) is:',
+  ['A company that imports goods','An organisation that represents workers\' rights','A government tax department','A banking institution'],1,20,2,'connaissance');
+
+// ── ANGLAIS L (C1/C2 — littéraire et culturel) — 15 nouvelles questions ──
+addQ('L','Anglais L','Reading — Literature',
+  'Read: "In Orwell\'s 1984, the Party controls every aspect of citizens\' lives, erasing history and manipulating language to maintain power." — What is the main tool of control described?',
+  ['Economic sanctions','Military force','Control of information, history and language','Physical imprisonment only'],2,20,2,'comprehension');
+addQ('L','Anglais L','Reading — Culture',
+  'Read: "Shakespeare\'s Hamlet explores themes of revenge, mortality, and the corruption of political power through the eyes of a prince haunted by his father\'s ghost." — Which theme is NOT mentioned?',
+  ['Revenge','Love and marriage','Mortality','Political corruption'],1,20,2,'comprehension');
+addQ('L','Anglais L','Vocabulary — Literary',
+  'In literary analysis, "the narrator\'s tone" refers to:',
+  ['The speed of the story','The author\'s attitude or feeling expressed through writing style','The number of characters','The setting of the novel'],1,20,2,'connaissance');
+addQ('L','Anglais L','Vocabulary — Literary',
+  'A "protagonist" is:',
+  ['The main villain of a story','The author of the text','The main character of a story','A type of narrative technique'],2,20,2,'connaissance');
+addQ('L','Anglais L','Grammar — Advanced',
+  '"___ we known about the consequences, we would never have agreed." (inverted conditional)',
+  ['If','Had','Should','Were'],1,20,2,'grammaire');
+addQ('L','Anglais L','Grammar — Advanced',
+  'Identify the literary device: "The silence screamed."',
+  ['Simile','Metaphor and personification combined (oxymoronic personification)','Alliteration','Hyperbole only'],1,20,2,'connaissance');
+addQ('L','Anglais L','Reading — History & Culture',
+  'Read: "The Harlem Renaissance of the 1920s was a flowering of African American culture, art, music, and literature that challenged racial stereotypes and celebrated Black identity." — What was the Harlem Renaissance primarily?',
+  ['A political revolution','A cultural and artistic movement celebrating African American identity','An economic reform period','A religious awakening'],1,20,2,'comprehension');
+addQ('L','Anglais L','Vocabulary — Analysis',
+  'When an author uses "dramatic irony", it means:',
+  ['The characters know something the reader does not','The reader knows something the characters do not','The plot is very dramatic','The story ends unexpectedly'],1,20,2,'connaissance');
+addQ('L','Anglais L','Expression — Essay',
+  'Which phrase introduces a COUNTER-ARGUMENT effectively in an English essay?',
+  ['"I disagree completely"','One could argue, however, that..."','"Obviously everyone knows that..."','"This is wrong because..."'],1,20,2,'expression');
+addQ('L','Anglais L','Vocabulary — Society',
+  '"Colonialism" refers to:',
+  ['A democratic system of government','The policy of a nation extending its control over foreign territories','A type of economic theory','A literary movement'],1,20,2,'connaissance');
+addQ('L','Anglais L','Grammar — Advanced',
+  '"She spoke ___ though she had rehearsed every word a thousand times." (adverbial clause)',
+  ['as','like','that','despite'],0,20,2,'grammaire');
+addQ('L','Anglais L','Reading — Philosophy & Literature',
+  'Read: "Existentialism, as developed by Sartre and de Beauvoir, holds that human beings create their own meaning in an indifferent universe." — What is the core idea of existentialism presented here?',
+  ['Humans have no free will','God determines human destiny','Humans create their own meaning','The universe is friendly'],2,20,2,'comprehension');
+addQ('L','Anglais L','Vocabulary — Rhetoric',
+  '"Anaphora" is a rhetorical device involving:',
+  ['Repetition of a word at the END of consecutive phrases','Repetition of a word at the START of consecutive phrases','A sudden change of subject','An appeal to authority'],1,20,2,'connaissance');
+addQ('L','Anglais L','Expression — Commentary',
+  'When commenting on a text, "close reading" means:',
+  ['Reading the text quickly for the main idea','Analysing every word, phrase and stylistic choice in detail','Summarising the plot only','Reading between the lines without evidence'],1,20,2,'expression');
+addQ('L','Anglais L','Reading — Post-Colonial Literature',
+  'Read: "Chinua Achebe\'s Things Fall Apart depicts the impact of European colonisation on Igbo society, showing how traditional values and community structures were eroded." — What does the novel primarily show?',
+  ['The benefits of colonisation','The positive changes in Igbo art','The destruction of traditional Igbo society by colonisation','The history of European exploration'],2,20,2,'comprehension');
+
+// ══════════════════════════════════════
+// SPRINT 3 — MÉTHODE BAC ANGLAIS SÉRIE L (Commentaire + Dissertation en anglais)
+// ══════════════════════════════════════
+METHODES['L'] = METHODES['L'] || [];
+METHODES['L'].push({
+  id:'m-l-anglais-commentaire',
+  icon:'🇬🇧',
+  color:'#4361EE',
+  title:'Anglais L — Commentaire de texte en anglais',
+  sub:'C2 · Méthode PEEL · Analyse stylistique · Dissertation',
+  steps: [
+    {num:1,color:'#4361EE',title:'First reading & annotation (5 min)',text:'Read once for overall meaning. Ask: What is the text about? What is the author\'s purpose (to inform, persuade, entertain, denounce)? What is the historical/cultural context? Underline key words, phrases, and any literary devices you notice. Note the text\'s genre (novel, poem, speech, essay, article).'},
+    {num:2,color:'#4361EE',title:'Build your thesis (problématique) (5 min)',text:'Formulate a central question that your commentary will answer. Ex: "How does Achebe use narrative voice and imagery to depict the erosion of Igbo identity?" or "How does Orwell\'s dystopian language reveal the mechanisms of political oppression?" Write this as your guiding thread (fil directeur). Every paragraph must answer this question.'},
+    {num:3,color:'#4361EE',title:'Identify literary devices & their effects',text:'List all stylistic features: metaphor, irony, symbolism, narrative voice (1st/3rd person), tense choices, sentence structure (long/complex vs short/abrupt), repetition, alliteration, contrast, imagery (visual, auditory), tone (melancholic, satirical, urgent). For each: name it → quote it → analyse its EFFECT on the reader.'},
+    {num:4,color:'#4361EE',title:'Structure your commentary (PEEL method)',text:'Each paragraph = P (Point/claim) + E (Evidence = quote from text) + E (Explanation of the device and its effect) + L (Link back to thesis). Use 2-3 paragraphs minimum. Never summarise — always ANALYSE. Example: "Achebe\'s use of repetition in \'things fall apart\' mirrors the cyclical inevitability of colonial destruction, creating a tone of tragic inevitability."'},
+    {num:5,color:'#4361EE',title:'Write the introduction & conclusion',text:'Introduction: Contextualise the text (author, date, genre, historical context) → present your thesis clearly. Conclusion: Summarise your main arguments in new phrasing → open onto a broader question (link to another work, the author\'s other texts, or a universal theme). Never introduce new arguments in the conclusion.'}
+  ],
+  pieges: '❌ Summarising the plot instead of analysing → 0 on technique marks | ❌ Quoting without explaining the effect → wasted evidence | ❌ Using informal language ("the author kind of shows...") | ❌ Forgetting the historical/cultural context | ❌ Analysing form separately from meaning — always link BOTH',
+  memo: '💡 The golden rule: Quote → Name the device → Analyse its effect on the reader → Link to your thesis. Every paragraph must do all four.'
+});
+
+METHODES['L'].push({
+  id:'m-l-anglais-dissertation',
+  icon:'✍️',
+  color:'#9B5DE5',
+  title:'Anglais L — Dissertation en anglais (3h30)',
+  sub:'C2 · Structure argue-counter-synthesise · Transitions · Style académique',
+  steps: [
+    {num:1,color:'#9B5DE5',title:'Analyse the essay question carefully (5 min)',text:'Identify ALL key terms and define them. "To what extent" = argue both sides + take a clear position. "How far do you agree" = same. "Discuss" = present multiple perspectives without necessarily taking sides. "Why" = explain causes. Never start writing before you fully understand what is asked.'},
+    {num:2,color:'#9B5DE5',title:'Plan your argument (3-part structure)',text:'Part 1 (THESIS): Your main argument supporting the statement. Part 2 (ANTITHESIS): A significant counter-argument. Part 3 (SYNTHESIS): Your nuanced conclusion showing WHY and to what extent you agree, resolving the tension. Each part needs 2-3 supporting points with literary evidence.'},
+    {num:3,color:'#9B5DE5',title:'Write a strong introduction',text:'Hook (1 sentence contextualising the topic) → Define key terms → Present both sides briefly → State your thesis (your personal stance). Length: 1 paragraph, ~120-150 words. The introduction should make the examiner want to read on.'},
+    {num:4,color:'#9B5DE5',title:'Develop each paragraph with academic style',text:'Use PEEL: Point → Evidence (quote + author + work) → Explain → Link. Use sophisticated transitions: "Furthermore...", "However, it must be acknowledged that...", "Conversely...", "Notwithstanding this...", "This analysis is reinforced by...". Avoid "I think" → use "One could argue", "The evidence suggests", "It is evident that".'},
+    {num:5,color:'#9B5DE5',title:'Write a conclusive synthesis',text:'Do NOT just repeat your introduction. Synthesise: show HOW the tension between thesis and antithesis leads to your nuanced position. Use phrases like: "Whilst it is undeniable that X, the evidence ultimately demonstrates Y, because...". End with a broad opening — a question, a universal relevance, or a connection to another text studied.'}
+  ],
+  pieges: '❌ Starting with "In this essay I will..." (trop scolaire) | ❌ No clear thesis statement | ❌ Informal vocabulary (gonna, wanna, kind of) | ❌ No transition between paragraphs | ❌ Counter-argument without any development | ❌ Conclusion that just repeats introduction word for word',
+  memo: '💡 Série L Anglais = C2. The examiner expects: sophisticated vocabulary, complex syntax, accurate grammar, and genuine literary analysis — not just comprehension. Aim for 600-800 words minimum.'
+});
 
 // ══════════════════════════════════════
 // INIT

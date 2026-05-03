@@ -1,11 +1,12 @@
 {
-  "name": "Révi-Bac Djibouti 2026",
+  "name": "Quiz Révision Bac Djibouti 2026",
   "short_name": "Révi-Bac 2026",
-  "description": "Révision intelligente pour le Baccalauréat de Djibouti 2026 — Toutes séries · LPK12",
+  "description": "Révision intelligente pour le Baccalauréat de Djibouti 2026 — Séries S, ES, L, SG · LPK12 · NUUR IA",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0d0a00",
+  "background_color": "#001a0d",
   "theme_color": "#c9950a",
   "lang": "fr",
   "categories": ["education"],
@@ -68,6 +69,18 @@
       "name": "Quiz Terminale S",
       "short_name": "Série S",
       "url": "./index.html#serie-S",
+      "icons": [{ "src": "icon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Quiz Terminale ES",
+      "short_name": "Série ES",
+      "url": "./index.html#serie-ES",
+      "icons": [{ "src": "icon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Quiz Terminale L",
+      "short_name": "Série L",
+      "url": "./index.html#serie-L",
       "icons": [{ "src": "icon-96x96.png", "sizes": "96x96" }]
     },
     {

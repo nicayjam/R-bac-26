@@ -4444,7 +4444,7 @@ async function callNuurAPI(userPrompt, callback) {
   try {
     var controller = new AbortController();
     var fetchTimer = setTimeout(function(){ controller.abort(); }, 11000);
-    var response = await fetch('https://api.anthropic.com/v1/messages', {
+    var response = await fetch('/api/nuur', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       signal: controller.signal,

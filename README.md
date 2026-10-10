@@ -1,4 +1,4 @@
-# 🎓 Quiz Révision Bac Djibouti 2026 — PWA · LPK12
+# 🎓 Quiz Révision Bac Djibouti 2027 — PWA · LPK12
 
 Application web progressive (PWA) installable directement depuis le navigateur,
 sans passer par l'App Store ou le Play Store.
@@ -68,4 +68,4 @@ sans passer par l'App Store ou le Play Store.
 
 ---
 
-*Quiz Révision Bac 2026 · LPK12 · Djibouti · Yassin Mahamoud Issé*
+*Quiz Révision Bac 2027 · LPK12 · Djibouti · Yassin Mahamoud Issé*

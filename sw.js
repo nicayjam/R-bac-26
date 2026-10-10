@@ -1,10 +1,10 @@
 /* ══════════════════════════════════════════════════
-   SERVICE WORKER — Quiz Révision Bac Djibouti 2026
-   Version : v21
+   SERVICE WORKER — Quiz Révision Bac Djibouti 2027
+   Version : v22
    Stratégie : Cache-First + mise à jour silencieuse en arrière-plan
    ══════════════════════════════════════════════════ */
 
-const CACHE_NAME = 'quiz-bac-dj-v21';
+const CACHE_NAME = 'quiz-bac-dj-v22';
 
 /* Ressources locales à mettre en cache obligatoirement */
 const LOCAL_URLS = [

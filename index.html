@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Révi-Bac Djibouti 2026</title>
+<title>Révi-Bac Djibouti 2027</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#4361EE">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Révi-Bac 2026">
+<meta name="apple-mobile-web-app-title" content="Révi-Bac 2027">
 <link rel="apple-touch-icon" href="icon-192x192.png">
 <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=DM+Sans:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
@@ -700,7 +700,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #001a0d; }
     <div class="particle" style="width:7px;height:7px;background:#9B5DE5;left:80%;animation-duration:9s;animation-delay:3s"></div>
 
     <div class="serie-intro">
-      <div class="serie-badge">🇩🇯 Bac Djibouti · 2026</div>
+      <div class="serie-badge">🇩🇯 Bac Djibouti · 2027</div>
       <div class="serie-main-title">Choisis<br>ta <span>série</span></div>
       <div class="serie-sub">Retourne la carte pour commencer ✨</div>
     </div>
@@ -853,7 +853,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #001a0d; }
         <div class="nuur-explain-avatar">✨</div>
         <div>
           <div class="nuur-explain-name">NUUR explique</div>
-          <div class="nuur-explain-sub">Lumière du Bac · Djibouti 2026</div>
+          <div class="nuur-explain-sub">Lumière du Bac · Djibouti 2027</div>
         </div>
       </div>
       <div class="nuur-typing" id="nuurTypingInline"><span></span><span></span><span></span></div>
@@ -927,7 +927,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #001a0d; }
       <div class="fh-blob"></div>
       <button onclick="closeFiches()" style="background:rgba(255,255,255,0.2);border:none;border-radius:10px;width:32px;height:32px;color:white;font-size:16px;cursor:pointer;position:relative;z-index:3;">←</button>
       <div class="fh-title" style="margin-top:8px;">📋 Fiches Flash</div>
-      <div class="fh-sub">Toutes séries · Concepts clés du Bac Djibouti 2026</div>
+      <div class="fh-sub">Toutes séries · Concepts clés du Bac Djibouti 2027</div>
       <div class="fiche-tabs" id="ficheSeriesTabs">
         <div class="fiche-tab active" onclick="switchFicheSerie('SG',this)">💼 SG</div>
         <div class="fiche-tab" onclick="switchFicheSerie('S',this)">🔬 S</div>
@@ -1043,7 +1043,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #001a0d; }
       <div style="width:36px;height:36px;background:linear-gradient(135deg,#9B5DE5,#C77DFF);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">✨</div>
       <div>
         <div style="font-family:'Outfit',sans-serif;font-weight:900;font-size:14px;color:var(--purple);">NUUR analyse…</div>
-        <div style="font-size:11px;color:var(--text-soft);">Explication ciblée · Bac Djibouti 2026</div>
+        <div style="font-size:11px;color:var(--text-soft);">Explication ciblée · Bac Djibouti 2027</div>
       </div>
     </div>
     <div id="nuurResponse" style="font-size:13px;line-height:1.65;color:var(--text);">
@@ -4321,7 +4321,7 @@ function showRobotNotif() { document.getElementById('diboNotif').classList.add('
 function hideRobotNotif() { document.getElementById('diboNotif').classList.remove('show'); }
 
 function onNuurClick() {
-  var msgs = ['Continue ! Chaque question te rapproche du bac. 💪', 'Tu travailles bien — c\'est comme ça qu\'on réussit ! 🌟', 'Concentre-toi sur la prochaine question. NUUR est là. ✨', 'Le bac Djibouti 2026, c\'est dans ta tête ! 🇩🇯'];
+  var msgs = ['Continue ! Chaque question te rapproche du bac. 💪', 'Tu travailles bien — c\'est comme ça qu\'on réussit ! 🌟', 'Concentre-toi sur la prochaine question. NUUR est là. ✨', 'Le bac Djibouti 2027, c\'est dans ta tête ! 🇩🇯'];
   showDiboSpeech(msgs[Math.floor(Math.random() * msgs.length)]);
   updateRobotMood('happy');
 }
@@ -4363,7 +4363,7 @@ function launchDiboParticles() {
 // ══════════════════════════════════════
 var nuurLastQuestion = { text:'', correctAnswer:'', wrongAnswer:'', matiere:'' };
 
-var nuurSystemPrompt = `Tu es NUUR ("lumière" en somali/afar), compagnon pédagogique du Quiz Bac Djibouti 2026.
+var nuurSystemPrompt = `Tu es NUUR ("lumière" en somali/afar), compagnon pédagogique du Quiz Bac Djibouti 2027.
 
 MISSION STRICTE — tu interviens UNIQUEMENT après une réponse de l'élève :
 • MAUVAISE réponse → analyse l'erreur précise, explique le concept, donne un moyen mémo
@@ -4373,7 +4373,7 @@ MISSION STRICTE — tu interviens UNIQUEMENT après une réponse de l'élève :
 RÈGLES ABSOLUES :
 - Réponse en français, 3-4 lignes maximum, ton bienveillant et direct
 - Contextualise à Djibouti quand pertinent (lac Assal, FDJ, Bab-el-Mandeb, économie djiboutienne…)
-- Tu connais les coefficients, le programme et les exigences du Bac Djibouti 2026
+- Tu connais les coefficients, le programme et les exigences du Bac Djibouti 2027
 - Termine OBLIGATOIREMENT par "💡 ASTUCE:" suivi d'une phrase mémo percutante
 
 FORMAT DE RÉPONSE :
@@ -4412,8 +4412,8 @@ function openNuurPanel() {
   document.querySelectorAll('.screen.active').forEach(function(s){ s.style.overflow = 'hidden'; });
 
   var prompt = nuurLastQuestion.text
-    ? 'Approfondis ce concept du Bac Djibouti 2026 lié à cette question: "' + nuurLastQuestion.text + '". Donne une explication plus complète avec un exemple similaire qui pourrait tomber au bac.'
-    : 'Donne un conseil de méthode pour bien réviser le Bac Djibouti 2026 en ' + (nuurLastQuestion.matiere || 'général') + '.';
+    ? 'Approfondis ce concept du Bac Djibouti 2027 lié à cette question: "' + nuurLastQuestion.text + '". Donne une explication plus complète avec un exemple similaire qui pourrait tomber au bac.'
+    : 'Donne un conseil de méthode pour bien réviser le Bac Djibouti 2027 en ' + (nuurLastQuestion.matiere || 'général') + '.';
 
   callNuurAPI(prompt, function(explanation, tip) {
     document.getElementById('nuurResponse').innerHTML = explanation;
